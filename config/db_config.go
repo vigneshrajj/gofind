@@ -2,18 +2,24 @@ package config
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/vigneshrajj/gofind/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func StartServer() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, World!"))
+		query := r.URL.Query().Get("query")
+		if query != "" {
+			http.Error(w, "Missing 'query' parameter", http.StatusBadRequest)
+			return
+		}
+		fmt.Fprintf(w, "Query: %s", query)
 	})
 
 	log.Fatal(http.ListenAndServe(":3005", nil))
