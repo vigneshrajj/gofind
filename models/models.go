@@ -13,10 +13,9 @@ const (
 )
 
 type Command struct {
-	ID  uint
+	Alias string `gorm:"primaryKey;type:VARCHAR(50);not null" json:"alias"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Alias string
 	Query string
 	Type CommandType `gorm:"type:VARCHAR(50);not null" json:"type"`
 	Description sql.NullString

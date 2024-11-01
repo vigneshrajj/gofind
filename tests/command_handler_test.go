@@ -45,7 +45,6 @@ func TestCreateCommand(t *testing.T) {
 func TestDeleteCommand(t *testing.T) {
 	defer setupCommandHandlerTest()()
 	cmd := models.Command{
-		ID: 1,
 		Alias: "help",
 		Query: "SELECT * FROM commands",
 		Type: models.UtilCommand,
@@ -57,7 +56,7 @@ func TestDeleteCommand(t *testing.T) {
 	if count != 1 {
 		t.Fatalf("Expected 1 command, but got %v", count)
 	}
-	handler.DeleteCommand(db, cmd.ID)
+	handler.DeleteCommand(db, "help")
 	db.Model(&models.Command{}).Count(&count)
 	if count != 0 {
 		t.Fatalf("Expected 0 command, but got %v", count)
@@ -92,8 +91,8 @@ func TestPartialSearchCommand(t *testing.T) {
 	if err := handler.CreateCommand(db, cmd); err != nil {
 		t.Fatal(err)
 	}
-	commands := handler.SearchCommand(db, "g")
-	if len(commands) != 1 {
-		t.Fatalf("Expected 1 command, got %d", len(commands))
+	command := handler.SearchCommand(db, "g", true)
+	if command == (models.Command{}) {
+		t.Fatalf("Expected 1 command, got %d", 0)
 	}
 }

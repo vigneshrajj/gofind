@@ -7,19 +7,21 @@ import (
 	"net/http"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/vigneshrajj/gofind/handler"
 	"github.com/vigneshrajj/gofind/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 func StartServer() {
+	_, db, err := NewDBConnection("gofind.db")
+	if err != nil {
+		log.Fatal(err);
+		return
+	}
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query().Get("query")
-		if query == "" {
-			http.Error(w, "Missing 'query' parameter", http.StatusBadRequest)
-			return
-		}
-		fmt.Fprintf(w, "Query: %s", query)
+		handler.HandleQuery(w, r, query, db)
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

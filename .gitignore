@@ -2,3 +2,5 @@
 db.sqlite
 tmp
 .air.toml
+bin
+tests/gofind.db
