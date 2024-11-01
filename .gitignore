@@ -1,2 +1,4 @@
 .idea
 db.sqlite
+tmp
+.air.toml

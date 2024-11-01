@@ -13,15 +13,20 @@ import (
 )
 
 func StartServer() {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query().Get("query")
-		if query != "" {
+		if query == "" {
 			http.Error(w, "Missing 'query' parameter", http.StatusBadRequest)
 			return
 		}
 		fmt.Fprintf(w, "Query: %s", query)
 	})
 
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "Server running on :3005")
+	})
+
+	log.Print("Starting server on :3005")
 	log.Fatal(http.ListenAndServe(":3005", nil))
 }
 
