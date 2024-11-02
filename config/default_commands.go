@@ -30,6 +30,13 @@ func InsertDefaultCommands(db *gorm.DB) error {
 			Description: sql.NullString{String: "Decode Base 64 string", Valid: true},
 			IsDefault:   false,
 		},
+		{
+			Alias:       "sha256",
+			Query:       "",
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "Convert To SHA 256 string", Valid: true},
+			IsDefault:   false,
+		},
 	}
 	var anyerr error
 	for _, command := range defaultCommands {

@@ -108,3 +108,22 @@ func Base64DecodePage(w http.ResponseWriter, decoded string) {
 		fmt.Fprint(w, "Base64 Template couldn't be executed.")
 	}
 }
+
+type Sha256PageData struct {
+	Value string
+}
+
+func Sha256Page(w http.ResponseWriter, hashed string) {
+	data := Sha256PageData{
+		Value: hashed,
+	}
+	tmpl, err := template.ParseFiles("static/templates/sha256.html")
+	if err != nil {
+		fmt.Fprint(w, "Sha256 Template not found.")
+		return
+	}
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		fmt.Fprint(w, "Sha256 Template couldn't be executed.")
+	}
+}

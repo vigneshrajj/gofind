@@ -26,6 +26,14 @@ func HandleUtilCommand(w http.ResponseWriter, r *http.Request, data []string, db
 		}
 		decoded := service.GetB64Decode(data[1])
 		service.Base64DecodePage(w, decoded)
+	case "sha256":
+		if len(data) != 2 {
+			w.WriteHeader(http.StatusBadRequest)
+			service.MessagePage(w, "Invalid number of arguments provided. SHA256 encode command usage: sha256 <string>")
+			return
+		}
+		encoded := service.Sha256(data[1])
+		service.Sha256Page(w, encoded)
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 		service.MessagePage(w, "Command not found.")
