@@ -14,17 +14,20 @@ import (
 
 func DeleteQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
 		if len(data) != 2 {
-			http.Error(w, "Invalid number of arguments provided. Delete command usage:\n#d <alias>", http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
+			service.MessagePage(w, "Invalid number of arguments provided. Delete command usage: #d <alias>")
 			return
 		}
 		command, err := SearchCommand(db, data[1], false)
 		if command == (models.Command{}) {
-			http.Error(w, "Command not found.", http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
+			service.MessagePage(w, "Command not found.")
 			return
 		}
 		err = DeleteCommand(db, data[1])
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
+			service.MessagePage(w,err.Error())
 			return
 		}
 		fmt.Fprintf(w, "Deleted Command: %s", data[1])
@@ -32,7 +35,8 @@ func DeleteQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
 
 func ListQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
 	if len(data) != 1 {
-		http.Error(w, "Invalid number of arguments provided. List command usage:\n#l", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		service.MessagePage(w, "Invalid number of arguments provided. List command usage: #l")
 		return
 	}
 	commands := ListCommands(db)
@@ -41,7 +45,8 @@ func ListQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
 
 func AddQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
 		if len(data) < 3 {
-			http.Error(w, "Invalid number of arguments provided. Add command usage:\n#a <alias> <url-with-args> <description(optional)>", http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
+			service.MessagePage(w, "Invalid number of arguments provided. Add command usage:\n#a <alias> <url-with-args> <description(optional)>")
 			return
 		}
 
@@ -55,17 +60,19 @@ func AddQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
 			
 		err := CreateCommand(db, command)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
+			service.MessagePage(w,err.Error())
 			return
 		}
-		fmt.Fprintf(w, "Added Command: %s\nURL: %s", data[1], data[2])
+		service.MessagePage(w, "Added Command: " + data[1]+", URL: "+data[2])
 }
 
 func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *gorm.DB) {
 	alias := data[0]
 	command, err := SearchCommand(db, alias, true)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		service.MessagePage(w,err.Error())
 		return
 	}
 
@@ -73,7 +80,8 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 		var defaultCommand models.Command
 		defaultCommand, err = GetDefaultCommand(db)
 		if err != nil {
-			http.Error(w, "Command not found", http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
+			service.MessagePage(w, "Command not found.")
 			return
 		}
 		command = defaultCommand
@@ -82,7 +90,8 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 
 	query := command.Query
 	if query == "" {
-		http.Error(w, "Command not found", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		service.MessagePage(w, "Command not found.")
 		return
 	}
 
@@ -105,7 +114,9 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 	argCountInQuery := strings.Count(query, "$")
 	isNArgQuery := strings.Count(query, "%s") == 1
 	if argCountInQuery > 0 && !isNArgQuery {
-		http.Error(w, "Invalid number of arguments provided", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		service.MessagePage(w, "Invalid number of arguments provided")
+		return
 	}
 
 	http.Redirect(w, r, query, http.StatusFound)
@@ -113,7 +124,8 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 
 func HandleQuery(w http.ResponseWriter, r *http.Request, query string, db *gorm.DB) {
 	if query == "" {
-		http.Error(w, "Query cannot be empty", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		service.MessagePage(w, "Query cannot be empty")
 		return
 	}
 	data := strings.Split(query, " ")

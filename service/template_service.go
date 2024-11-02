@@ -45,3 +45,22 @@ func ListCommandsPage(w http.ResponseWriter, commands []models.Command) {
 		fmt.Fprint(w, "ListCommands Template couldn't be executed.")
 	}
 }
+
+type MessagePageData struct {
+	Message string
+}
+
+func MessagePage(w http.ResponseWriter, msg string) {
+	data := MessagePageData{
+		Message: msg,
+	}
+	tmpl, err := template.ParseFiles("static/templates/message.html")
+	if err != nil {
+		fmt.Fprint(w, "MessagePage Template not found.")
+		return
+	}
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		fmt.Fprint(w, "MessagePage Template couldn't be executed.")
+	}
+}

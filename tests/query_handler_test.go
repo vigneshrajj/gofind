@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"io"
 	"net/http/httptest"
 	"net/url"
 	"testing"
@@ -34,13 +33,9 @@ func TestEmptyQuery(t *testing.T) {
 
 	handler.HandleQuery(w, nil, query, db)
 	resp := w.Result()
-	body, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != 400 {
 		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
-	}
-	if string(body) != "Query cannot be empty\n" {
-		t.Fatalf("Expected body to be 'Query cannot be empty', but got %v", string(body))
 	}
 }
 
