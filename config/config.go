@@ -21,6 +21,8 @@ func StartServer() {
 	}
 	InsertDefaultCommands(db)
 
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query().Get("query")
 		handler.HandleQuery(w, r, query, db)

@@ -1,0 +1,26 @@
+body {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	text-align: center;
+	color: #404040;
+	font-family:Trebuchet MS,Helvetica,sans-serif;
+}
+
+table {
+	margin: 2rem auto;
+	min-width: 40vw;
+}
+
+th {
+	background-color: #DFF2EB;
+	padding: .5rem 1rem;
+}
+
+td {
+	padding: .3rem 1rem;
+	text-align: start;
+}
+tr:nth-child(odd) {
+	background-color: #edf2f0;
+}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>GoFind - List Commands</title>
+		<link href="/static/styles.css" rel="stylesheet">
+	</head>
+	<body>
+		<h1>List of Available Commands</h1>
+		<table>
+			<tr>
+				<th>Alias</th>
+				<th>Query</th>
+				<th>Default</th>
+			</tr>
+			{{range .Commands}}
+			<tr>
+				<td>{{.Alias}}</td>
+				<td>{{.Query}}</td>
+				{{if .IsDefault}}
+					<td>true</td>
+				{{end}}
+			</tr>
+			{{end}}
+		</table>
+	</body>
+</html>

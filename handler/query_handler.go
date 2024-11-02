@@ -2,7 +2,6 @@ package handler
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -37,14 +36,7 @@ func ListQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
 		return
 	}
 	commands := ListCommands(db)
-	commandsJson, err := json.Marshal(commands)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	service.MainLayout(w)
-	return
-	fmt.Fprintf(w, "Commands: %s", string(commandsJson))
+	service.ListCommandsPage(w, commands)
 }
 
 func AddQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
