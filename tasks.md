@@ -1,18 +1,8 @@
-x create database sqlite
-
-## model
-command
-- id autoincrement int
-- created at
-- updated at
-- alias
-- query
-- type: util, api, search
-- description
-
-save to database through command
-list all from database as json
-run a command
-delete a command from db
-
-add frontend for listing, adding, deleting
+- make default changable
+- show message page with 400 error
+- allow key:value alias
+- add utils like base64, color picker, sha256, etc.
+- dockerize
+- documentation
+- github public
+- host
