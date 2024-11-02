@@ -60,11 +60,6 @@ func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, 
 		return
 	}
 
-	if command.Type == models.UtilCommand {
-		HandleUtilCommand(w, data)
-		return
-	}
-
 	if command == (models.Command{}) {
 		var defaultCommand models.Command
 		defaultCommand, err = database.GetDefaultCommand(db)
@@ -75,6 +70,11 @@ func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, 
 		}
 		command = defaultCommand
 		data = append([]string{command.Alias}, data...)
+	}
+
+	if command.Type == models.UtilCommand {
+		HandleUtilCommand(w, data)
+		return
 	}
 
 	query := command.Query
