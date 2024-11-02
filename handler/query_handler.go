@@ -152,7 +152,7 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 		argCountInQuery := strings.Count(query, "{")
 		if argCountInQuery > 0 {
 			w.WriteHeader(http.StatusBadRequest)
-			service.MessagePage(w, "Invalid number of arguments provided")
+			service.MessagePage(w, "Invalid arguments provided")
 			return
 		}
 		http.Redirect(w, r, query, http.StatusFound)
