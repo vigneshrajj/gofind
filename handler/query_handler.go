@@ -108,10 +108,10 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 
 	argCount := len(data) - 1
 	for i := argCount; i >= 1; i-- {
-		query = strings.Replace(query, fmt.Sprintf("$%d", i), data[i], -1)
+		query = strings.Replace(query, fmt.Sprintf("{%d}", i), data[i], -1)
 	}
 
-	argCountInQuery := strings.Count(query, "$")
+	argCountInQuery := strings.Count(query, "{")
 	isNArgQuery := strings.Count(query, "%s") == 1
 	if argCountInQuery > 0 && !isNArgQuery {
 		w.WriteHeader(http.StatusBadRequest)
