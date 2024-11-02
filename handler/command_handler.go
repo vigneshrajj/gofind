@@ -58,5 +58,7 @@ func SetDefaultCommand(db *gorm.DB, alias string) error {
 	}
 	command.IsDefault = true
 	defaultCommand.IsDefault = false
+	db.Save(&command)
+	db.Save(&defaultCommand)
 	return nil
 }
