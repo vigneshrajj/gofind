@@ -91,7 +91,10 @@ func TestPartialSearchCommand(t *testing.T) {
 	if err := handler.CreateCommand(db, cmd); err != nil {
 		t.Fatal(err)
 	}
-	command := handler.SearchCommand(db, "g", true)
+	command, err := handler.SearchCommand(db, "g", true)
+	if err != nil {
+		t.Fatalf("Failed to search command: %v", err)
+	}
 	if command == (models.Command{}) {
 		t.Fatalf("Expected 1 command, got %d", 0)
 	}
