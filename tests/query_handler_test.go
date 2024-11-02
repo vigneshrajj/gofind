@@ -336,6 +336,24 @@ func TestRedirectQueryWithMultipleKeyValueArgCommand(t *testing.T) {
 	}
 }
 
+func TestRedirectQueryWithInvalidKeyValueArgCommand(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#a alias https://google.com/search?q={key:val,key2:val2,key3:val3}"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+	handler.HandleQuery(w, r, query, db)
+	w = httptest.NewRecorder()
+	query = "alias abc"
+
+	handler.HandleQuery(w, r, query, db)
+	resp := w.Result()
+
+	if resp.StatusCode != 400 {
+		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
+	}
+}
+
 func TestRedirectQueryWithInvalidArgsCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com/search?q={1}"
