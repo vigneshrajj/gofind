@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/vigneshrajj/gofind/models"
+	"github.com/vigneshrajj/gofind/service"
 	"gorm.io/gorm"
 )
 
@@ -31,17 +32,19 @@ func DeleteQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
 }
 
 func ListQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
-		if len(data) != 1 {
-			http.Error(w, "Invalid number of arguments provided. List command usage:\n#l", http.StatusBadRequest)
-			return
-		}
-		commands := ListCommands(db)
-		commandsJson, err := json.Marshal(commands)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		fmt.Fprintf(w, "Commands: %s", string(commandsJson))
+	if len(data) != 1 {
+		http.Error(w, "Invalid number of arguments provided. List command usage:\n#l", http.StatusBadRequest)
+		return
+	}
+	commands := ListCommands(db)
+	commandsJson, err := json.Marshal(commands)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	service.MainLayout(w)
+	return
+	fmt.Fprintf(w, "Commands: %s", string(commandsJson))
 }
 
 func AddQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
@@ -70,9 +73,21 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 	alias := data[0]
 	command, err := SearchCommand(db, alias, true)
 	if err != nil {
-		http.Error(w, "Command not found", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	if command == (models.Command{}) {
+		var defaultCommand models.Command
+		defaultCommand, err = GetDefaultCommand(db)
+		if err != nil {
+			http.Error(w, "Command not found", http.StatusBadRequest)
+			return
+		}
+		command = defaultCommand
+		data = append([]string{command.Alias}, data...)
+	}
+
 	query := command.Query
 	if query == "" {
 		http.Error(w, "Command not found", http.StatusBadRequest)

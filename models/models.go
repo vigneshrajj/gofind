@@ -19,4 +19,5 @@ type Command struct {
 	Query string
 	Type CommandType `gorm:"type:VARCHAR(50);not null" json:"type"`
 	Description sql.NullString
+	IsDefault bool
 }

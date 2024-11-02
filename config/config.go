@@ -19,6 +19,8 @@ func StartServer() {
 		log.Fatal(err);
 		return
 	}
+	InsertDefaultCommands(db)
+
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query().Get("query")
 		handler.HandleQuery(w, r, query, db)
@@ -51,6 +53,20 @@ func NewDBConnection(dbFileName string) (*sql.DB, *gorm.DB, error) {
 func HandleCommandTable(db *gorm.DB) error {
 	if err := db.AutoMigrate(&models.Command{}); err != nil {
 		log.Fatalf("Failed to migrate the Command schema: %v", err)
+		return err
+	}
+	return nil
+}
+
+func InsertDefaultCommands(db *gorm.DB) error {
+	defaultCommand := models.Command{
+		Alias: "g",
+		Query: "https://www.google.com/search?q=%s",
+		Type: models.SearchCommand,
+		Description: sql.NullString{String: "Google Search", Valid: true},
+		IsDefault: true,
+	}
+	if err := handler.CreateCommand(db, defaultCommand); err != nil {
 		return err
 	}
 	return nil

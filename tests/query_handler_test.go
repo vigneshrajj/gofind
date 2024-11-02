@@ -15,6 +15,7 @@ import (
 func setupQueryHandlerTest() func() {
 	var err error
 	_, db, err = config.NewDBConnection(":memory:")
+	config.InsertDefaultCommands(db)
 	if err != nil {
 		panic(err)
 	}
@@ -193,21 +194,21 @@ func TestRedirectByPartialMatchQueryCommand(t *testing.T) {
 	}
 }
 
-func TestRedirectInvalidQueryCommand(t *testing.T) {
+func TestRedirectInvalidQueryWithDefaultCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
-	query := "#a alias https://google.com"
-	urlEncodedQuery := url.QueryEscape(query)
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
-	handler.HandleQuery(w, r, query, db)
-	query = "invalid"
+	query := "invalid"
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+query, nil)
 
 	w = httptest.NewRecorder()
 	handler.HandleQuery(w, r, query, db)
 	resp := w.Result()
 
-	if resp.StatusCode != 400 {
-		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
+	if resp.StatusCode != 302 {
+		t.Fatalf("Expected status code 200, but got %v", resp.StatusCode)
+	}
+	if resp.Header.Get("Location") != "https://www.google.com/search?q=invalid" {
+		t.Fatalf("Expected Location header to be 'https://www.google.com/search?q=invalid', but got %v", resp.Header.Get("Location"))
 	}
 }
 
