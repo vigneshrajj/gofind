@@ -42,7 +42,7 @@ func TestEmptyQuery(t *testing.T) {
 	}
 }
 
-func TestAddQueryCommand(t *testing.T) {
+func TestAddCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://url"
 	w := httptest.NewRecorder()
@@ -55,7 +55,7 @@ func TestAddQueryCommand(t *testing.T) {
 	}
 }
 
-func TestDuplicateAddQueryCommand(t *testing.T) {
+func TestAddDuplicateCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://url"
 	w := httptest.NewRecorder()
@@ -70,7 +70,7 @@ func TestDuplicateAddQueryCommand(t *testing.T) {
 	}
 }
 
-func TestInvalidAddQueryCommand(t *testing.T) {
+func TestInvalidAddCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias"
 	w := httptest.NewRecorder()
@@ -83,7 +83,7 @@ func TestInvalidAddQueryCommand(t *testing.T) {
 	}
 }
 
-func TestDeleteNonExistingQueryCommand(t *testing.T) {
+func TestDeleteNonExistingCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#d alias"
 	w := httptest.NewRecorder()
@@ -96,7 +96,7 @@ func TestDeleteNonExistingQueryCommand(t *testing.T) {
 	}
 }
 
-func TestDeleteQueryCommand(t *testing.T) {
+func TestDeleteCommandQuery(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com"
 	w := httptest.NewRecorder()
@@ -111,7 +111,7 @@ func TestDeleteQueryCommand(t *testing.T) {
 	}
 }
 
-func TestExtraArgsDeleteQueryCommand(t *testing.T) {
+func TestExtraArgsDeleteCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#d alias extra"
 	w := httptest.NewRecorder()
@@ -124,7 +124,7 @@ func TestExtraArgsDeleteQueryCommand(t *testing.T) {
 	}
 }
 
-func TestLessArgsDeleteQueryCommand(t *testing.T) {
+func TestLessArgsDeleteCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#d"
 	w := httptest.NewRecorder()
@@ -137,7 +137,7 @@ func TestLessArgsDeleteQueryCommand(t *testing.T) {
 	}
 }
 
-func TestListQueryCommand(t *testing.T) {
+func TestListCommandsQuery(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#l"
 	w := httptest.NewRecorder()
@@ -150,7 +150,7 @@ func TestListQueryCommand(t *testing.T) {
 	}
 }
 
-func TestRedirectQueryCommand(t *testing.T) {
+func TestRedirectQuery(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com"
 	urlEncodedQuery := url.QueryEscape(query)
@@ -171,7 +171,7 @@ func TestRedirectQueryCommand(t *testing.T) {
 	}
 }
 
-func TestRedirectByPartialMatchQueryCommand(t *testing.T) {
+func TestRedirectByPartialMatch(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com"
 	urlEncodedQuery := url.QueryEscape(query)
@@ -192,7 +192,7 @@ func TestRedirectByPartialMatchQueryCommand(t *testing.T) {
 	}
 }
 
-func TestRedirectByDuplicatePartialMatchCommand(t *testing.T) {
+func TestRedirectBySupercedingPartialMatch(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com"
 	urlEncodedQuery := url.QueryEscape(query)
@@ -220,7 +220,7 @@ func TestRedirectByDuplicatePartialMatchCommand(t *testing.T) {
 	}
 }
 
-func TestRedirectInvalidQueryWithDefaultCommand(t *testing.T) {
+func TestRedirectNonExistingAliasToDefaultCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	w := httptest.NewRecorder()
 	query := "invalid"
@@ -238,7 +238,7 @@ func TestRedirectInvalidQueryWithDefaultCommand(t *testing.T) {
 	}
 }
 
-func TestRedirectQueryWithNArgsCommand(t *testing.T) {
+func TestRedirectWithNArgs(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com/search?q=%s"
 	urlEncodedQuery := url.QueryEscape(query)
@@ -259,7 +259,7 @@ func TestRedirectQueryWithNArgsCommand(t *testing.T) {
 	}
 }
 
-func TestRedirectQueryWithMultipleArgsCommand(t *testing.T) {
+func TestRedirectWithMultipleArgs(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com/search?q={1}+{2}"
 	urlEncodedQuery := url.QueryEscape(query)
@@ -278,7 +278,7 @@ func TestRedirectQueryWithMultipleArgsCommand(t *testing.T) {
 	}
 }
 
-func TestRedirectQueryWithOneArgCommand(t *testing.T) {
+func TestRedirectWithOneArg(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com/search?q={1}"
 	urlEncodedQuery := url.QueryEscape(query)
@@ -299,7 +299,7 @@ func TestRedirectQueryWithOneArgCommand(t *testing.T) {
 	}
 }
 
-func TestRedirectQueryWithKeyValueArgCommand(t *testing.T) {
+func TestRedirectWithKeyValueArg(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com/search?q={key:val,key2:val2,key3:val3}"
 	urlEncodedQuery := url.QueryEscape(query)
@@ -320,7 +320,7 @@ func TestRedirectQueryWithKeyValueArgCommand(t *testing.T) {
 	}
 }
 
-func TestRedirectQueryWithMultipleKeyValueArgCommand(t *testing.T) {
+func TestRedirectWithMultipleKeyValueArg(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com/search?q={key:val,key2:val2,key3:val3}+{key:val,key2:val2,key3:val3}"
 	urlEncodedQuery := url.QueryEscape(query)
@@ -339,7 +339,7 @@ func TestRedirectQueryWithMultipleKeyValueArgCommand(t *testing.T) {
 	}
 }
 
-func TestRedirectQueryWithInvalidKeyValueArgCommand(t *testing.T) {
+func TestRedirectWithInvalidKeyValueArg(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com/search?q={key:val,key2:val2,key3:val3}"
 	urlEncodedQuery := url.QueryEscape(query)
@@ -357,7 +357,7 @@ func TestRedirectQueryWithInvalidKeyValueArgCommand(t *testing.T) {
 	}
 }
 
-func TestRedirectQueryWithInvalidArgsCommand(t *testing.T) {
+func TestRedirectWithInvalidArgs(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com/search?q={1}"
 	urlEncodedQuery := url.QueryEscape(query)
