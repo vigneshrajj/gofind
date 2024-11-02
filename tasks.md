@@ -1,6 +1,6 @@
 x make default changable
 x show message page with 400 error
-- allow key:value alias
+x allow key:value alias
 - add utils like base64, color picker, sha256, etc.
 - dockerize
 - documentation

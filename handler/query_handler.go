@@ -14,24 +14,24 @@ import (
 )
 
 func DeleteQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
-		if len(data) != 2 {
-			w.WriteHeader(http.StatusBadRequest)
-			service.MessagePage(w, "Invalid number of arguments provided. Delete command usage: #d <alias>")
-			return
-		}
-		command, err := SearchCommand(db, data[1], false)
-		if command == (models.Command{}) {
-			w.WriteHeader(http.StatusBadRequest)
-			service.MessagePage(w, "Command not found.")
-			return
-		}
-		err = DeleteCommand(db, data[1])
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			service.MessagePage(w,err.Error())
-			return
-		}
-		fmt.Fprintf(w, "Deleted Command: %s", data[1])
+	if len(data) != 2 {
+		w.WriteHeader(http.StatusBadRequest)
+		service.MessagePage(w, "Invalid number of arguments provided. Delete command usage: #d <alias>")
+		return
+	}
+	command, err := SearchCommand(db, data[1], false)
+	if command == (models.Command{}) {
+		w.WriteHeader(http.StatusBadRequest)
+		service.MessagePage(w, "Command not found.")
+		return
+	}
+	err = DeleteCommand(db, data[1])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		service.MessagePage(w, err.Error())
+		return
+	}
+	fmt.Fprintf(w, "Deleted Command: %s", data[1])
 }
 
 func ListQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
@@ -45,33 +45,33 @@ func ListQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
 }
 
 func AddQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
-		if len(data) < 3 {
-			w.WriteHeader(http.StatusBadRequest)
-			service.MessagePage(w, "Invalid number of arguments provided. Add command usage:\n#a <alias> <url-with-args> <description(optional)>")
-			return
-		}
+	if len(data) < 3 {
+		w.WriteHeader(http.StatusBadRequest)
+		service.MessagePage(w, "Invalid number of arguments provided. Add command usage:\n#a <alias> <url-with-args> <description(optional)>")
+		return
+	}
 
-		command := models.Command{
-			Alias: data[1],
-			Query: data[2],
-		}
-		if len(data) > 3 {
-			command.Description = sql.NullString{String: strings.Join(data[3:], " "), Valid: true}
-		}
-			
-		err := CreateCommand(db, command)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			service.MessagePage(w,err.Error())
-			return
-		}
-		service.MessagePage(w, "Added Command: " + data[1]+", URL: "+data[2])
+	command := models.Command{
+		Alias: data[1],
+		Query: data[2],
+	}
+	if len(data) > 3 {
+		command.Description = sql.NullString{String: strings.Join(data[3:], " "), Valid: true}
+	}
+
+	err := CreateCommand(db, command)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		service.MessagePage(w, err.Error())
+		return
+	}
+	service.MessagePage(w, "Added Command: "+data[1]+", URL: "+data[2])
 }
 
 func isKeyValueArg(query string) bool {
 	bracketIndex := strings.Index(query, "{")
 	if bracketIndex == -1 {
-			return false
+		return false
 	}
 	colonIndex := strings.Index(query[bracketIndex:], ":")
 	if colonIndex == -1 {
@@ -81,29 +81,29 @@ func isKeyValueArg(query string) bool {
 }
 
 func replaceKeyWithValue(input string, choice string) string {
-    re := regexp.MustCompile(`{([^}]*)}`)
-    matches := re.FindStringSubmatch(input)
+	re := regexp.MustCompile(`{([^}]*)}`)
+	matches := re.FindStringSubmatch(input)
 
-    if len(matches) == 0 {
-        return input
-    }
+	if len(matches) == 0 {
+		return input
+	}
 
-    content := matches[1]
-    keyValuePairs := strings.Split(content, ",")
+	content := matches[1]
+	keyValuePairs := strings.Split(content, ",")
 
-    kvMap := make(map[string]string)
-    for _, pair := range keyValuePairs {
-        parts := strings.SplitN(pair, ":", 2)
-        if len(parts) == 2 {
-            kvMap[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
-        }
-    }
+	kvMap := make(map[string]string)
+	for _, pair := range keyValuePairs {
+		parts := strings.SplitN(pair, ":", 2)
+		if len(parts) == 2 {
+			kvMap[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+		}
+	}
 
-    if value, found := kvMap[choice]; found {
-        return strings.Replace(input, matches[0], value, 1)
-    }
+	if value, found := kvMap[choice]; found {
+		return strings.Replace(input, matches[0], value, 1)
+	}
 
-    return input
+	return input
 }
 
 func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *gorm.DB) {
@@ -111,7 +111,12 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 	command, err := SearchCommand(db, alias, true)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		service.MessagePage(w,err.Error())
+		service.MessagePage(w, err.Error())
+		return
+	}
+
+	if command.Type == models.UtilCommand {
+		HandleUtilCommand(w, r, data, db)
 		return
 	}
 

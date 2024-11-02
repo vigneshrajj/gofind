@@ -363,8 +363,10 @@ func TestRedirectQueryWithInvalidArgsCommand(t *testing.T) {
 	handler.HandleQuery(w, r, query, db)
 	w = httptest.NewRecorder()
 	query = "alias"
+
 	handler.HandleQuery(w, r, query, db)
 	resp := w.Result()
+
 	if resp.StatusCode != 400 {
 		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
 	}

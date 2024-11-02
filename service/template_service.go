@@ -64,3 +64,47 @@ func MessagePage(w http.ResponseWriter, msg string) {
 		fmt.Fprint(w, "MessagePage Template couldn't be executed.")
 	}
 }
+
+type B64PageType string
+const (
+	Encoded B64PageType = "encoded"
+	Decoded B64PageType = "decoded"
+)
+
+type B64PageData struct {
+	Value string
+	Type B64PageType
+}
+
+
+func Base64Page(w http.ResponseWriter, encoded string) {
+	data := B64PageData{
+		Value: encoded,
+		Type: "encoded",
+	}
+	tmpl, err := template.ParseFiles("static/templates/base64.html")
+	if err != nil {
+		fmt.Fprint(w, "Base64 Template not found.")
+		return
+	}
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		fmt.Fprint(w, "Base64 Template couldn't be executed.")
+	}
+}
+
+func Base64DecodePage(w http.ResponseWriter, decoded string) {
+	data := B64PageData{
+		Value: decoded,
+		Type: "decoded",
+	}
+	tmpl, err := template.ParseFiles("static/templates/base64.html")
+	if err != nil {
+		fmt.Fprint(w, "Base64 Template not found.")
+		return
+	}
+	err = tmpl.Execute(w, data)
+	if err != nil {
+		fmt.Fprint(w, "Base64 Template couldn't be executed.")
+	}
+}

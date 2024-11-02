@@ -12,6 +12,13 @@ func CreateCommand(db *gorm.DB, command models.Command) error {
 	return nil
 }
 
+func FirstOrCreateCommand(db *gorm.DB, command models.Command) error {
+	if err := db.FirstOrCreate(&command).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
 func DeleteCommand(db *gorm.DB, alias string) error {
 	if err := db.Delete(&models.Command{}, "alias=? AND is_default=?", alias, false).Error; err != nil {
 		return err

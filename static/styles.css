@@ -46,3 +46,8 @@ tr:nth-child(odd) {
 input[type="radio"] {
 	accent-color: var(--radio-color);
 }
+
+textarea {
+	min-width: 50vw;
+	margin: 0 auto;
+}
