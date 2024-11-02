@@ -1,25 +1,28 @@
 package tests
 
 import (
+	"github.com/vigneshrajj/gofind/internal/database"
+	"github.com/vigneshrajj/gofind/internal/handlers"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/vigneshrajj/gofind/config"
-	"github.com/vigneshrajj/gofind/handler"
 	"github.com/vigneshrajj/gofind/models"
 )
 
 func setupQueryHandlerTest() func() {
 	var err error
-	_, db, err = config.NewDBConnection(":memory:")
-	config.InsertDefaultCommands(db)
+	_, db, err = database.NewDBConnection(":memory:")
+	if err != nil {
+		panic(err)
+	}
+	err = database.EnsureDefaultCommandsExist(db)
 	if err != nil {
 		panic(err)
 	}
 
-	if err := db.AutoMigrate(&models.Command{}); err != nil {
+	if err = db.AutoMigrate(&models.Command{}); err != nil {
 		panic(err)
 	}
 
@@ -29,9 +32,9 @@ func setupQueryHandlerTest() func() {
 func TestEmptyQuery(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := ""
-	w:= httptest.NewRecorder()
+	w := httptest.NewRecorder()
 
-	handler.HandleQuery(w, nil, query, db)
+	handlers.HandleQuery(w, nil, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 400 {
@@ -42,9 +45,9 @@ func TestEmptyQuery(t *testing.T) {
 func TestAddQueryCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://url"
-	w:= httptest.NewRecorder()
+	w := httptest.NewRecorder()
 
-	handler.HandleQuery(w, nil, query, db)
+	handlers.HandleQuery(w, nil, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 200 {
@@ -56,10 +59,10 @@ func TestDuplicateAddQueryCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://url"
 	w := httptest.NewRecorder()
-	handler.HandleQuery(w, nil, query, db)
+	handlers.HandleQuery(w, nil, query, db)
 	w = httptest.NewRecorder()
 
-	handler.HandleQuery(w, nil, query, db)
+	handlers.HandleQuery(w, nil, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 400 {
@@ -70,9 +73,9 @@ func TestDuplicateAddQueryCommand(t *testing.T) {
 func TestInvalidAddQueryCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias"
-	w:= httptest.NewRecorder()
+	w := httptest.NewRecorder()
 
-	handler.HandleQuery(w, nil, query, db)
+	handlers.HandleQuery(w, nil, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 400 {
@@ -83,9 +86,9 @@ func TestInvalidAddQueryCommand(t *testing.T) {
 func TestDeleteNonExistingQueryCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#d alias"
-	w:= httptest.NewRecorder()
+	w := httptest.NewRecorder()
 
-	handler.HandleQuery(w, nil, query, db)
+	handlers.HandleQuery(w, nil, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 400 {
@@ -97,10 +100,10 @@ func TestDeleteQueryCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com"
 	w := httptest.NewRecorder()
-	handler.HandleQuery(w, nil, query, db)
+	handlers.HandleQuery(w, nil, query, db)
 	query = "#d alias"
 
-	handler.HandleQuery(w, nil, query, db)
+	handlers.HandleQuery(w, nil, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 200 {
@@ -111,9 +114,9 @@ func TestDeleteQueryCommand(t *testing.T) {
 func TestExtraArgsDeleteQueryCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#d alias extra"
-	w:= httptest.NewRecorder()
+	w := httptest.NewRecorder()
 
-	handler.HandleQuery(w, nil, query, db)
+	handlers.HandleQuery(w, nil, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 400 {
@@ -124,9 +127,9 @@ func TestExtraArgsDeleteQueryCommand(t *testing.T) {
 func TestLessArgsDeleteQueryCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#d"
-	w:= httptest.NewRecorder()
+	w := httptest.NewRecorder()
 
-	handler.HandleQuery(w, nil, query, db)
+	handlers.HandleQuery(w, nil, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 400 {
@@ -139,7 +142,7 @@ func TestListQueryCommand(t *testing.T) {
 	query := "#l"
 	w := httptest.NewRecorder()
 
-	handler.HandleQuery(w, nil, query, db)
+	handlers.HandleQuery(w, nil, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 200 {
@@ -153,11 +156,11 @@ func TestRedirectQueryCommand(t *testing.T) {
 	urlEncodedQuery := url.QueryEscape(query)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	w = httptest.NewRecorder()
 	query = "alias"
 
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 302 {
@@ -174,11 +177,11 @@ func TestRedirectByPartialMatchQueryCommand(t *testing.T) {
 	urlEncodedQuery := url.QueryEscape(query)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	w = httptest.NewRecorder()
 	query = "al"
 
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 302 {
@@ -195,18 +198,18 @@ func TestRedirectByDuplicatePartialMatchCommand(t *testing.T) {
 	urlEncodedQuery := url.QueryEscape(query)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	w = httptest.NewRecorder()
 	query = "#a al https://youtube.com"
 	urlEncodedQuery = url.QueryEscape(query)
 	w = httptest.NewRecorder()
 	r = httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	w = httptest.NewRecorder()
 	r = httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
 	query = "al"
 
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 302 {
@@ -224,7 +227,7 @@ func TestRedirectInvalidQueryWithDefaultCommand(t *testing.T) {
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+query, nil)
 
 	w = httptest.NewRecorder()
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 302 {
@@ -241,11 +244,11 @@ func TestRedirectQueryWithNArgsCommand(t *testing.T) {
 	urlEncodedQuery := url.QueryEscape(query)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	w = httptest.NewRecorder()
 	query = "alias search some string"
 
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 302 {
@@ -262,10 +265,10 @@ func TestRedirectQueryWithMultipleArgsCommand(t *testing.T) {
 	urlEncodedQuery := url.QueryEscape(query)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	w = httptest.NewRecorder()
 	query = "alias search string"
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
 	if resp.StatusCode != 302 {
 		t.Fatalf("Expected status code 302, but got %v", resp.StatusCode)
@@ -281,11 +284,11 @@ func TestRedirectQueryWithOneArgCommand(t *testing.T) {
 	urlEncodedQuery := url.QueryEscape(query)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	w = httptest.NewRecorder()
 	query = "alias search"
 
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 302 {
@@ -302,11 +305,11 @@ func TestRedirectQueryWithKeyValueArgCommand(t *testing.T) {
 	urlEncodedQuery := url.QueryEscape(query)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	w = httptest.NewRecorder()
 	query = "alias key2"
 
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 302 {
@@ -323,10 +326,10 @@ func TestRedirectQueryWithMultipleKeyValueArgCommand(t *testing.T) {
 	urlEncodedQuery := url.QueryEscape(query)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	w = httptest.NewRecorder()
 	query = "alias key2 key3"
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
 	if resp.StatusCode != 302 {
 		t.Fatalf("Expected status code 302, but got %v", resp.StatusCode)
@@ -342,11 +345,11 @@ func TestRedirectQueryWithInvalidKeyValueArgCommand(t *testing.T) {
 	urlEncodedQuery := url.QueryEscape(query)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	w = httptest.NewRecorder()
 	query = "alias abc"
 
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 400 {
@@ -360,11 +363,11 @@ func TestRedirectQueryWithInvalidArgsCommand(t *testing.T) {
 	urlEncodedQuery := url.QueryEscape(query)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	w = httptest.NewRecorder()
 	query = "alias"
 
-	handler.HandleQuery(w, r, query, db)
+	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
 
 	if resp.StatusCode != 400 {

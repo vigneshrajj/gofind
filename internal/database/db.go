@@ -1,13 +1,42 @@
-package config
+package database
 
 import (
 	"database/sql"
 	"github.com/vigneshrajj/gofind/handler"
 	"github.com/vigneshrajj/gofind/models"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"log"
 )
 
-func InsertDefaultCommands(db *gorm.DB) error {
+func NewDBConnection(dbFileName string) (*sql.DB, *gorm.DB, error) {
+	db, err := gorm.Open(sqlite.Open(dbFileName), &gorm.Config{})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	dbSql, err := db.DB()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = EnsureCommandTableExists(db)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return dbSql, db, nil
+}
+
+func EnsureCommandTableExists(db *gorm.DB) error {
+	if err := db.AutoMigrate(&models.Command{}); err != nil {
+		log.Fatalf("Failed to migrate the Command schema: %v", err)
+		return err
+	}
+	return nil
+}
+
+func EnsureDefaultCommandsExist(db *gorm.DB) error {
 	defaultCommands := []models.Command{
 		{
 			Alias:       "g",

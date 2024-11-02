@@ -1,72 +1,17 @@
-package handler
+package handlers
 
 import (
-	"database/sql"
 	"fmt"
+	"github.com/vigneshrajj/gofind/internal/database"
+	"github.com/vigneshrajj/gofind/internal/templates"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
 
 	"github.com/vigneshrajj/gofind/models"
-	"github.com/vigneshrajj/gofind/service"
 	"gorm.io/gorm"
 )
-
-func DeleteQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
-	if len(data) != 2 {
-		w.WriteHeader(http.StatusBadRequest)
-		service.MessagePage(w, "Invalid number of arguments provided. Delete command usage: #d <alias>")
-		return
-	}
-	command, err := SearchCommand(db, data[1], false)
-	if command == (models.Command{}) {
-		w.WriteHeader(http.StatusBadRequest)
-		service.MessagePage(w, "Command not found.")
-		return
-	}
-	err = DeleteCommand(db, data[1])
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		service.MessagePage(w, err.Error())
-		return
-	}
-	fmt.Fprintf(w, "Deleted Command: %s", data[1])
-}
-
-func ListQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
-	if len(data) != 1 {
-		w.WriteHeader(http.StatusBadRequest)
-		service.MessagePage(w, "Invalid number of arguments provided. List command usage: #l")
-		return
-	}
-	commands := ListCommands(db)
-	service.ListCommandsPage(w, commands)
-}
-
-func AddQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
-	if len(data) < 3 {
-		w.WriteHeader(http.StatusBadRequest)
-		service.MessagePage(w, "Invalid number of arguments provided. Add command usage:\n#a <alias> <url-with-args> <description(optional)>")
-		return
-	}
-
-	command := models.Command{
-		Alias: data[1],
-		Query: data[2],
-	}
-	if len(data) > 3 {
-		command.Description = sql.NullString{String: strings.Join(data[3:], " "), Valid: true}
-	}
-
-	err := CreateCommand(db, command)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		service.MessagePage(w, err.Error())
-		return
-	}
-	service.MessagePage(w, "Added Command: "+data[1]+", URL: "+data[2])
-}
 
 func isKeyValueArg(query string) bool {
 	bracketIndex := strings.Index(query, "{")
@@ -106,26 +51,26 @@ func replaceKeyWithValue(input string, choice string) string {
 	return input
 }
 
-func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *gorm.DB) {
+func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *gorm.DB) {
 	alias := data[0]
-	command, err := SearchCommand(db, alias, true)
+	command, err := database.SearchCommand(db, alias, true)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		service.MessagePage(w, err.Error())
+		templates.MessageTemplate(w, err.Error())
 		return
 	}
 
 	if command.Type == models.UtilCommand {
-		HandleUtilCommand(w, r, data, db)
+		HandleUtilCommand(w, data)
 		return
 	}
 
 	if command == (models.Command{}) {
 		var defaultCommand models.Command
-		defaultCommand, err = GetDefaultCommand(db)
+		defaultCommand, err = database.GetDefaultCommand(db)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			service.MessagePage(w, "Command not found.")
+			templates.MessageTemplate(w, "Command not found.")
 			return
 		}
 		command = defaultCommand
@@ -135,7 +80,7 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 	query := command.Query
 	if query == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		service.MessagePage(w, "Command not found.")
+		templates.MessageTemplate(w, "Command not found.")
 		return
 	}
 
@@ -157,7 +102,7 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 		argCountInQuery := strings.Count(query, "{")
 		if argCountInQuery > 0 {
 			w.WriteHeader(http.StatusBadRequest)
-			service.MessagePage(w, "Invalid arguments provided")
+			templates.MessageTemplate(w, "Invalid arguments provided")
 			return
 		}
 		http.Redirect(w, r, query, http.StatusFound)
@@ -174,7 +119,7 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 	isNArgQuery := strings.Count(query, "%s") == 1
 	if argCountInQuery > 0 && !isNArgQuery {
 		w.WriteHeader(http.StatusBadRequest)
-		service.MessagePage(w, "Invalid number of arguments provided")
+		templates.MessageTemplate(w, "Invalid number of arguments provided")
 		return
 	}
 
@@ -184,18 +129,18 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 func HandleQuery(w http.ResponseWriter, r *http.Request, query string, db *gorm.DB) {
 	if query == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		service.MessagePage(w, "Query cannot be empty")
+		templates.MessageTemplate(w, "Query cannot be empty")
 		return
 	}
 	data := strings.Split(query, " ")
 	switch data[0] {
 	case "#a":
-		AddQuery(w, data, db)
+		HandleAddCommand(w, data, db)
 	case "#d":
-		DeleteQuery(w, data, db)
+		HandleDeleteCommand(w, data, db)
 	case "#l":
-		ListQuery(w, data, db)
+		HandleListCommands(w, data, db)
 	default:
-		RedirectQuery(w, r, data, db)
+		HandleRedirectQuery(w, r, data, db)
 	}
 }

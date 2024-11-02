@@ -1,19 +1,21 @@
 package tests
 
 import (
+	"github.com/vigneshrajj/gofind/internal/database"
+	"github.com/vigneshrajj/gofind/internal/server"
+	"io"
 	"net/http"
 	"testing"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/vigneshrajj/gofind/config"
 	"gorm.io/gorm"
 )
 
 var db *gorm.DB
 
 func TestServerIsRunning(t *testing.T) {
-	go config.StartServer()
+	go server.StartServer()
 
 	time.Sleep(100 * time.Millisecond)
 
@@ -21,7 +23,12 @@ func TestServerIsRunning(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to connect to server: %v", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			t.Fatalf("Failed to close response body: %v", err)
+		}
+	}(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Expected status code 200, but got %v", resp.StatusCode)
@@ -29,7 +36,7 @@ func TestServerIsRunning(t *testing.T) {
 }
 
 func TestDBConnection(t *testing.T) {
-	dbSql, _, err := config.NewDBConnection(":memory:")
+	dbSql, _, err := database.NewDBConnection(":memory:")
 	if err != nil {
 		t.Fatalf("Failed to connect to the database: %v", err)
 	}

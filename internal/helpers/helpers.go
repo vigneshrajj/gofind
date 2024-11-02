@@ -1,4 +1,4 @@
-package service
+package helpers
 
 import (
 	"crypto/sha256"

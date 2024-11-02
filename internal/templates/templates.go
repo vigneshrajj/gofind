@@ -1,18 +1,17 @@
-package service
+package templates
 
 import (
 	"fmt"
+	"github.com/vigneshrajj/gofind/models"
 	"html/template"
 	"net/http"
-
-	"github.com/vigneshrajj/gofind/models"
 )
 
 type ListCommandsPageData struct {
 	Commands []models.Command
 }
 
-func ListCommandsPage(w http.ResponseWriter, commands []models.Command) {
+func ListCommandsTemplate(w http.ResponseWriter, commands []models.Command) {
 	data := ListCommandsPageData{
 		Commands: commands,
 	}
@@ -31,22 +30,23 @@ type MessagePageData struct {
 	Message string
 }
 
-func MessagePage(w http.ResponseWriter, msg string) {
+func MessageTemplate(w http.ResponseWriter, msg string) {
 	data := MessagePageData{
 		Message: msg,
 	}
 	tmpl, err := template.ParseFiles("static/templates/message.html")
 	if err != nil {
-		fmt.Fprint(w, "MessagePage Template not found.")
+		fmt.Fprint(w, "MessageTemplate Template not found.")
 		return
 	}
 	err = tmpl.Execute(w, data)
 	if err != nil {
-		fmt.Fprint(w, "MessagePage Template couldn't be executed.")
+		fmt.Fprint(w, "MessageTemplate Template couldn't be executed.")
 	}
 }
 
 type B64PageType string
+
 const (
 	Encoded B64PageType = "encoded"
 	Decoded B64PageType = "decoded"
@@ -54,14 +54,13 @@ const (
 
 type B64PageData struct {
 	Value string
-	Type B64PageType
+	Type  B64PageType
 }
 
-
-func Base64Page(w http.ResponseWriter, encoded string) {
+func Base64Template(w http.ResponseWriter, encoded string) {
 	data := B64PageData{
 		Value: encoded,
-		Type: "encoded",
+		Type:  Encoded,
 	}
 	tmpl, err := template.ParseFiles("static/templates/base64.html")
 	if err != nil {
@@ -74,10 +73,10 @@ func Base64Page(w http.ResponseWriter, encoded string) {
 	}
 }
 
-func Base64DecodePage(w http.ResponseWriter, decoded string) {
+func Base64DecodeTemplate(w http.ResponseWriter, decoded string) {
 	data := B64PageData{
 		Value: decoded,
-		Type: "decoded",
+		Type:  Decoded,
 	}
 	tmpl, err := template.ParseFiles("static/templates/base64.html")
 	if err != nil {
@@ -94,7 +93,7 @@ type Sha256PageData struct {
 	Value string
 }
 
-func Sha256Page(w http.ResponseWriter, hashed string) {
+func Sha256Template(w http.ResponseWriter, hashed string) {
 	data := Sha256PageData{
 		Value: hashed,
 	}
