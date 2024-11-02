@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"github.com/vigneshrajj/gofind/handler"
 	"github.com/vigneshrajj/gofind/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -69,7 +68,7 @@ func EnsureDefaultCommandsExist(db *gorm.DB) error {
 	}
 	var anyerr error
 	for _, command := range defaultCommands {
-		if err := handler.FirstOrCreateCommand(db, command); err != nil {
+		if err := FirstOrCreateCommand(db, command); err != nil {
 			anyerr = err
 		}
 	}
