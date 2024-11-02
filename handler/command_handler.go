@@ -28,7 +28,7 @@ func ListCommands(db *gorm.DB) []models.Command {
 func SearchCommand(db *gorm.DB, alias string, partialMatch bool) (models.Command, error) {
 	var command models.Command
 	if partialMatch {
-		if err := db.Where("alias LIKE ?", alias+"%").Find(&command).Error; err != nil {
+		if err := db.Where("alias LIKE ?", alias+"%").Order("LENGTH(alias) ASC").Find(&command).Error; err != nil {
 			return command, err
 		}
 	} else {
