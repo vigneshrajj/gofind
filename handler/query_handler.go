@@ -94,6 +94,13 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 	for i := argCount; i >= 1; i-- {
 		query = strings.Replace(query, fmt.Sprintf("$%d", i), data[i], -1)
 	}
+
+	argCountInQuery := strings.Count(query, "$")
+	isNArgQuery := strings.Count(query, "%s") == 1
+	if argCountInQuery > 0 && !isNArgQuery {
+		http.Error(w, "Invalid number of arguments provided", http.StatusBadRequest)
+	}
+
 	http.Redirect(w, r, query, http.StatusFound)
 }
 

@@ -232,7 +232,26 @@ func TestRedirectQueryWithNArgsCommand(t *testing.T) {
 	}
 }
 
-func TestRedirectQueryWithArgCommand(t *testing.T) {
+func TestRedirectQueryWithMultipleArgsCommand(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#a alias https://google.com/search?q=$1+$2"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+	handler.HandleQuery(w, r, query, db)
+	w = httptest.NewRecorder()
+	query = "alias search string"
+	handler.HandleQuery(w, r, query, db)
+	resp := w.Result()
+	if resp.StatusCode != 302 {
+		t.Fatalf("Expected status code 302, but got %v", resp.StatusCode)
+	}
+	if resp.Header.Get("Location") != "https://google.com/search?q=search+string" {
+		t.Fatalf("Expected Location header to be 'https://google.com/search?q=search+string', but got %v", resp.Header.Get("Location"))
+	}
+}
+
+func TestRedirectQueryWithOneArgCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com/search?q=$1"
 	urlEncodedQuery := url.QueryEscape(query)
@@ -250,5 +269,21 @@ func TestRedirectQueryWithArgCommand(t *testing.T) {
 	}
 	if resp.Header.Get("Location") != "https://google.com/search?q=search" {
 		t.Fatalf("Expected Location header to be 'https://google.com/search?q=search', but got %v", resp.Header.Get("Location"))
+	}
+}
+
+func TestRedirectQueryWithInvalidArgsCommand(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#a alias https://google.com/search?q=$1"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+	handler.HandleQuery(w, r, query, db)
+	w = httptest.NewRecorder()
+	query = "alias"
+	handler.HandleQuery(w, r, query, db)
+	resp := w.Result()
+	if resp.StatusCode != 400 {
+		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
 	}
 }
