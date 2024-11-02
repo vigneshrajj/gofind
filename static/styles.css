@@ -1,10 +1,28 @@
+:root {
+	--text-color: #404040;
+	--primary-color: #dff2eb;
+	--row-color: #edf2f0;
+  --radio-color: #8abfa3;
+}
+
 body {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	text-align: center;
-	color: #404040;
+	color: var(--text-color);
 	font-family:Trebuchet MS,Helvetica,sans-serif;
+}
+
+#msg {
+	background-color: var(--primary-color);
+	padding: .5rem 1rem;
+	border-radius: .5rem;
+	display: inline-block;
+}
+
+#msg:empty {
+	display: none;
 }
 
 table {
@@ -13,7 +31,7 @@ table {
 }
 
 th {
-	background-color: #DFF2EB;
+	background-color: var(--primary-color);
 	padding: .5rem 1rem;
 }
 
@@ -22,5 +40,9 @@ td {
 	text-align: start;
 }
 tr:nth-child(odd) {
-	background-color: #edf2f0;
+	background-color: var(--row-color);
+}
+
+input[type="radio"] {
+	accent-color: var(--radio-color);
 }
