@@ -5,9 +5,15 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>GoFind - List Commands</title>
 		<link href="/static/styles.css" rel="stylesheet">
+		<script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
 	</head>
 	<body>
 		<h1>List of Available Commands</h1>
+
+		<span>
+			<p id="msg"></p>
+		</span>
+
 		<table>
 			<tr>
 				<th>Alias</th>
@@ -19,9 +25,26 @@
 				<td>{{.Alias}}</td>
 				<td>{{.Query}}</td>
 				{{if .IsDefault}}
-					<td>true</td>
+				<td>
+				<input type="radio" name="default" value="{{.Alias}}"
+					hx-get="/set-default-command"
+					hx-trigger="change"
+					hx-target="#msg" 
+					hx-swap="textContent"
+					checked
+				>
+					<span class="graphical-radio"></span>
+				</td>
 				{{else}}
-					<td></td>
+				<td>
+				<input type="radio" name="default" value="{{.Alias}}"
+					hx-get="/set-default-command"
+					hx-trigger="change"
+					hx-target="#msg" 
+					hx-swap="textContent"
+				>
+					<span class="graphical-radio"></span>
+				</td>
 				{{end}}
 			</tr>
 			{{end}}

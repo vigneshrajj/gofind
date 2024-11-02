@@ -27,6 +27,9 @@ func StartServer() {
 		query := r.URL.Query().Get("query")
 		handler.HandleQuery(w, r, query, db)
 	})
+	http.HandleFunc("/set-default-command", func(w http.ResponseWriter, r *http.Request) {
+		handler.ChangeDefaultCommand(w, r, db)
+	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "Server running on :3005")
