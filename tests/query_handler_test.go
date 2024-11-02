@@ -30,6 +30,7 @@ func TestEmptyQuery(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := ""
 	w:= httptest.NewRecorder()
+
 	handler.HandleQuery(w, nil, query, db)
 	resp := w.Result()
 	body, _ := io.ReadAll(resp.Body)
@@ -46,8 +47,10 @@ func TestAddQueryCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://url"
 	w:= httptest.NewRecorder()
+
 	handler.HandleQuery(w, nil, query, db)
 	resp := w.Result()
+
 	if resp.StatusCode != 200 {
 		t.Fatalf("Expected status code 200, but got %v", resp.StatusCode)
 	}
@@ -59,8 +62,10 @@ func TestDuplicateAddQueryCommand(t *testing.T) {
 	w := httptest.NewRecorder()
 	handler.HandleQuery(w, nil, query, db)
 	w = httptest.NewRecorder()
+
 	handler.HandleQuery(w, nil, query, db)
 	resp := w.Result()
+
 	if resp.StatusCode != 400 {
 		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
 	}
@@ -70,8 +75,10 @@ func TestInvalidAddQueryCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias"
 	w:= httptest.NewRecorder()
+
 	handler.HandleQuery(w, nil, query, db)
 	resp := w.Result()
+
 	if resp.StatusCode != 400 {
 		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
 	}
@@ -81,8 +88,10 @@ func TestDeleteNonExistingQueryCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#d alias"
 	w:= httptest.NewRecorder()
+
 	handler.HandleQuery(w, nil, query, db)
 	resp := w.Result()
+
 	if resp.StatusCode != 400 {
 		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
 	}
@@ -93,33 +102,37 @@ func TestDeleteQueryCommand(t *testing.T) {
 	query := "#a alias https://google.com"
 	w := httptest.NewRecorder()
 	handler.HandleQuery(w, nil, query, db)
-
 	query = "#d alias"
-	w = httptest.NewRecorder()
+
 	handler.HandleQuery(w, nil, query, db)
 	resp := w.Result()
+
 	if resp.StatusCode != 200 {
 		t.Fatalf("Expected status code 200, but got %v", resp.StatusCode)
 	}
 }
 
-func TestExtraParamsDeleteQueryCommand(t *testing.T) {
+func TestExtraArgsDeleteQueryCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#d alias extra"
 	w:= httptest.NewRecorder()
+
 	handler.HandleQuery(w, nil, query, db)
 	resp := w.Result()
+
 	if resp.StatusCode != 400 {
 		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
 	}
 }
 
-func TestLessParamsDeleteQueryCommand(t *testing.T) {
+func TestLessArgsDeleteQueryCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#d"
 	w:= httptest.NewRecorder()
+
 	handler.HandleQuery(w, nil, query, db)
 	resp := w.Result()
+
 	if resp.StatusCode != 400 {
 		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
 	}
@@ -129,8 +142,10 @@ func TestListQueryCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#l"
 	w := httptest.NewRecorder()
+
 	handler.HandleQuery(w, nil, query, db)
 	resp := w.Result()
+
 	if resp.StatusCode != 200 {
 		t.Fatalf("Expected status code 200, but got %v", resp.StatusCode)
 	}
@@ -143,14 +158,97 @@ func TestRedirectQueryCommand(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
 	handler.HandleQuery(w, r, query, db)
-	query = "alias"
 	w = httptest.NewRecorder()
+	query = "alias"
+
 	handler.HandleQuery(w, r, query, db)
 	resp := w.Result()
+
 	if resp.StatusCode != 302 {
 		t.Fatalf("Expected status code 302, but got %v", resp.StatusCode)
 	}
 	if resp.Header.Get("Location") != "https://google.com" {
 		t.Fatalf("Expected Location header to be 'https://google.com', but got %v", resp.Header.Get("Location"))
+	}
+}
+
+func TestRedirectByPartialMatchQueryCommand(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#a alias https://google.com"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+	handler.HandleQuery(w, r, query, db)
+	w = httptest.NewRecorder()
+	query = "al"
+
+	handler.HandleQuery(w, r, query, db)
+	resp := w.Result()
+
+	if resp.StatusCode != 302 {
+		t.Fatalf("Expected status code 302, but got %v", resp.StatusCode)
+	}
+	if resp.Header.Get("Location") != "https://google.com" {
+		t.Fatalf("Expected Location header to be 'https://google.com', but got %v", resp.Header.Get("Location"))
+	}
+}
+
+func TestRedirectInvalidQueryCommand(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#a alias https://google.com"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+	handler.HandleQuery(w, r, query, db)
+	query = "invalid"
+
+	w = httptest.NewRecorder()
+	handler.HandleQuery(w, r, query, db)
+	resp := w.Result()
+
+	if resp.StatusCode != 400 {
+		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
+	}
+}
+
+func TestRedirectQueryWithNArgsCommand(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#a alias https://google.com/search?q=%s"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+	handler.HandleQuery(w, r, query, db)
+	w = httptest.NewRecorder()
+	query = "alias search some string"
+
+	handler.HandleQuery(w, r, query, db)
+	resp := w.Result()
+
+	if resp.StatusCode != 302 {
+		t.Fatalf("Expected status code 302, but got %v", resp.StatusCode)
+	}
+	if resp.Header.Get("Location") != "https://google.com/search?q=search+some+string" {
+		t.Fatalf("Expected Location header to be 'https://google.com/search?q=search+some+string', but got %v", resp.Header.Get("Location"))
+	}
+}
+
+func TestRedirectQueryWithArgCommand(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#a alias https://google.com/search?q=$1"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+	handler.HandleQuery(w, r, query, db)
+	w = httptest.NewRecorder()
+	query = "alias search"
+
+	handler.HandleQuery(w, r, query, db)
+	resp := w.Result()
+
+	if resp.StatusCode != 302 {
+		t.Fatalf("Expected status code 302, but got %v", resp.StatusCode)
+	}
+	if resp.Header.Get("Location") != "https://google.com/search?q=search" {
+		t.Fatalf("Expected Location header to be 'https://google.com/search?q=search', but got %v", resp.Header.Get("Location"))
 	}
 }
