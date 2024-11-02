@@ -4,3 +4,4 @@ tmp
 .air.toml
 bin
 tests/gofind.db
+gofind.db
