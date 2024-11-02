@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/vigneshrajj/gofind/models"
@@ -67,6 +68,44 @@ func AddQuery(w http.ResponseWriter, data []string, db *gorm.DB) {
 		service.MessagePage(w, "Added Command: " + data[1]+", URL: "+data[2])
 }
 
+func isKeyValueArg(query string) bool {
+	bracketIndex := strings.Index(query, "{")
+	if bracketIndex == -1 {
+			return false
+	}
+	colonIndex := strings.Index(query[bracketIndex:], ":")
+	if colonIndex == -1 {
+		return false
+	}
+	return true
+}
+
+func replaceKeyWithValue(input string, choice string) string {
+    re := regexp.MustCompile(`{([^}]*)}`)
+    matches := re.FindStringSubmatch(input)
+
+    if len(matches) == 0 {
+        return input
+    }
+
+    content := matches[1]
+    keyValuePairs := strings.Split(content, ",")
+
+    kvMap := make(map[string]string)
+    for _, pair := range keyValuePairs {
+        parts := strings.SplitN(pair, ":", 2)
+        if len(parts) == 2 {
+            kvMap[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+        }
+    }
+
+    if value, found := kvMap[choice]; found {
+        return strings.Replace(input, matches[0], value, 1)
+    }
+
+    return input
+}
+
 func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *gorm.DB) {
 	alias := data[0]
 	command, err := SearchCommand(db, alias, true)
@@ -106,8 +145,23 @@ func RedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *go
 		return
 	}
 
+	if isKeyValueArg(query) {
+		for i := 1; i < len(data); i++ {
+			query = replaceKeyWithValue(query, data[i])
+		}
+		argCountInQuery := strings.Count(query, "{")
+		if argCountInQuery > 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			service.MessagePage(w, "Invalid number of arguments provided")
+			return
+		}
+		http.Redirect(w, r, query, http.StatusFound)
+		return
+	}
+
 	argCount := len(data) - 1
 	for i := argCount; i >= 1; i-- {
+		query = strings.Replace(query, fmt.Sprintf("{%d}", i), data[i], -1)
 		query = strings.Replace(query, fmt.Sprintf("{%d}", i), data[i], -1)
 	}
 

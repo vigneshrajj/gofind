@@ -296,6 +296,46 @@ func TestRedirectQueryWithOneArgCommand(t *testing.T) {
 	}
 }
 
+func TestRedirectQueryWithKeyValueArgCommand(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#a alias https://google.com/search?q={key:val,key2:val2,key3:val3}"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+	handler.HandleQuery(w, r, query, db)
+	w = httptest.NewRecorder()
+	query = "alias key2"
+
+	handler.HandleQuery(w, r, query, db)
+	resp := w.Result()
+
+	if resp.StatusCode != 302 {
+		t.Fatalf("Expected status code 302, but got %v", resp.StatusCode)
+	}
+	if resp.Header.Get("Location") != "https://google.com/search?q=val2" {
+		t.Fatalf("Expected Location header to be 'https://google.com/search?q=val2', but got %v", resp.Header.Get("Location"))
+	}
+}
+
+func TestRedirectQueryWithMultipleKeyValueArgCommand(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#a alias https://google.com/search?q={key:val,key2:val2,key3:val3}+{key:val,key2:val2,key3:val3}"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+	handler.HandleQuery(w, r, query, db)
+	w = httptest.NewRecorder()
+	query = "alias key2 key3"
+	handler.HandleQuery(w, r, query, db)
+	resp := w.Result()
+	if resp.StatusCode != 302 {
+		t.Fatalf("Expected status code 302, but got %v", resp.StatusCode)
+	}
+	if resp.Header.Get("Location") != "https://google.com/search?q=val2+val3" {
+		t.Fatalf("Expected Location header to be 'https://google.com/search?q=val2+val3', but got %v", resp.Header.Get("Location"))
+	}
+}
+
 func TestRedirectQueryWithInvalidArgsCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com/search?q={1}"
