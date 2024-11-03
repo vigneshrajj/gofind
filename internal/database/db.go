@@ -26,7 +26,7 @@ func NewDBConnection(dbFileName string) (*sql.DB, *gorm.DB, error) {
 		return nil, nil, err
 	}
 	if config.EnableAdditionalCommands {
-		err = EnsureDefaultCommandsExist(db)
+		err = EnsureAdditionalCommandsExist(db)
 		if err != nil {
 				return nil, nil, err
 		}
