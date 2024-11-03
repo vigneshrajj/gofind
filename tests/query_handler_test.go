@@ -17,10 +17,7 @@ func setupQueryHandlerTest() func() {
 	if err != nil {
 		panic(err)
 	}
-	err = database.EnsureDefaultCommandsExist(db)
-	if err != nil {
-		panic(err)
-	}
+	database.EnsureDefaultCommandsExist(db)
 
 	if err = db.AutoMigrate(&models.Command{}); err != nil {
 		panic(err)
@@ -94,7 +91,7 @@ func TestInvalidAddCommand(t *testing.T) {
 	}
 }
 
-func TestDeleteNonExistingCommand(t *testing.T) {
+func TestDeleteNonExistingCommandQuery(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#d alias"
 	w := httptest.NewRecorder()
@@ -405,15 +402,23 @@ func TestChangeDefaultCommand(t *testing.T) {
 	r := httptest.NewRequest("GET", "http://localhost:3005/set-default-command?default=alias", nil)
 	w = httptest.NewRecorder()
 	handlers.ChangeDefaultCommand(w, r, db)
-	command, err := database.GetDefaultCommand(db)
-	if err != nil {
-		t.Fatalf("Failed to get default command: %v", err)
-	}
+	command := database.GetDefaultCommand(db)
 	if command == (models.Command{}) {
 		t.Fatalf("Expected 1 command, got %d", 0)
 	}
 	if command.Alias != "alias" {
 		t.Fatalf("Expected default command alias to be 'alias', but got %v", command.Alias)
+	}
+}
+
+func TestChangeDefaultCommandToNonExistingCommand(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	r := httptest.NewRequest("GET", "http://localhost:3005/set-default-command?default=alias", nil)
+	w := httptest.NewRecorder()
+	handlers.ChangeDefaultCommand(w, r, db)
+	resp := w.Result()
+	if resp.StatusCode != 400 {
+		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
 	}
 }
 

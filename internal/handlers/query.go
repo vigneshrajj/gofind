@@ -53,21 +53,10 @@ func replaceKeyWithValue(input string, choice string) string {
 
 func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *gorm.DB) {
 	alias := data[0]
-	command, err := database.SearchCommand(db, alias, true)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		templates.MessageTemplate(w, err.Error())
-		return
-	}
+	command := database.SearchCommand(db, alias, true)
 
 	if command == (models.Command{}) {
-		var defaultCommand models.Command
-		defaultCommand, err = database.GetDefaultCommand(db)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			templates.MessageTemplate(w, "Command not found.")
-			return
-		}
+		defaultCommand := database.GetDefaultCommand(db)
 		command = defaultCommand
 		data = append([]string{command.Alias}, data...)
 	}

@@ -1,6 +1,8 @@
 package database
 
 import (
+	"errors"
+
 	"github.com/vigneshrajj/gofind/models"
 	"gorm.io/gorm"
 )
@@ -12,16 +14,13 @@ func CreateCommand(db *gorm.DB, command models.Command) error {
 	return nil
 }
 
-func FirstOrCreateCommand(db *gorm.DB, command models.Command) error {
-	if err := db.FirstOrCreate(&command).Error; err != nil {
-		return err
-	}
-	return nil
+func FirstOrCreateCommand(db *gorm.DB, command models.Command) {
+	db.FirstOrCreate(&command)
 }
 
 func DeleteCommand(db *gorm.DB, alias string) error {
-	if err := db.Delete(&models.Command{}, "alias=? AND is_default=?", alias, false).Error; err != nil {
-		return err
+	if rowsAffected := db.Delete(&models.Command{}, "alias=? AND is_default=?", alias, false).RowsAffected; rowsAffected == 0 {
+		return errors.New("Command not found")
 	}
 	return nil
 }
@@ -32,36 +31,30 @@ func ListCommands(db *gorm.DB) []models.Command {
 	return commands
 }
 
-func SearchCommand(db *gorm.DB, alias string, partialMatch bool) (models.Command, error) {
+func SearchCommand(db *gorm.DB, alias string, partialMatch bool) models.Command {
 	var command models.Command
 	if partialMatch {
-		if err := db.Where("alias LIKE ?", alias+"%").Order("LENGTH(alias) ASC").Find(&command).Error; err != nil {
-			return command, err
-		}
+		db.Where("alias LIKE ?", alias+"%").Order("LENGTH(alias) ASC").Find(&command)
 	} else {
-		if err := db.Where("alias=?", alias).Find(&command).Error; err != nil {
-			return command, err
-		}
+		db.Where("alias=?", alias).Find(&command)
 	}
-	return command, nil
+	return command
 }
 
-func GetDefaultCommand(db *gorm.DB) (models.Command, error) {
+func GetDefaultCommand(db *gorm.DB) models.Command {
 	var command models.Command
-	if err := db.Where("is_default=?", true).Find(&command).Error; err != nil {
-		return command, err
-	}
-	return command, nil
+	db.Where("is_default=?", true).Find(&command)
+	return command
 }
 
 func SetDefaultCommand(db *gorm.DB, alias string) error {
 	var command models.Command
 	var defaultCommand models.Command
-	if err := db.Where("alias=?", alias).Find(&command).Error; err != nil {
-		return err
+	if db.Where("alias=?", alias).Find(&command); command == (models.Command{}) {
+		return errors.New("Command not found")
 	}
-	if err := db.Where("is_default=?", true).Find(&defaultCommand).Error; err != nil {
-		return err
+	if db.Where("is_default=?", true).Find(&defaultCommand); defaultCommand == (models.Command{}) {
+		return errors.New("Default Command not found")
 	}
 	command.IsDefault = true
 	defaultCommand.IsDefault = false

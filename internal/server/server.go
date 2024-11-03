@@ -12,7 +12,7 @@ import (
 )
 
 func HandleRoutes(db *gorm.DB) {
-	fs := http.FileServer(http.Dir("../static"))
+	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query().Get("query")
@@ -34,18 +34,10 @@ func StartServer() {
 		return
 	}
 
-	err = database.EnsureDefaultCommandsExist(db)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+	database.EnsureDefaultCommandsExist(db)
 
 	if config.EnableAdditionalCommands {
-		err = database.EnsureAdditionalCommandsExist(db)
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
+		database.EnsureAdditionalCommandsExist(db)
 	}
 
 	HandleRoutes(db)

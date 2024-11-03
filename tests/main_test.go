@@ -61,6 +61,24 @@ func TestServerIsRunning(t *testing.T) {
 	}
 }
 
+func TestDBConnection(t *testing.T) {
+	dbSql, _, err := database.NewDBConnection(":memory:")
+	if err != nil {
+		t.Fatalf("Failed to connect to the database: %v", err)
+	}
+
+	if err := dbSql.Ping(); err != nil {
+		t.Fatalf("Database connection is not alive: %v", err)
+	}
+}
+
+func TestDBConnectionWithInvalidFileName(t *testing.T) {
+	_, _, err := database.NewDBConnection("db/db/invalid.db")
+	if err == nil {
+		t.Fatalf("Expected an error, but got nil")
+	}
+}
+
 func TestSearchEndpoint(t *testing.T) {
 	defer setupServerTest()()
 
@@ -93,16 +111,5 @@ func TestSetDefaultCommandEndpoint(t *testing.T) {
 	}(resp.Body)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Expected status code 200, but got %v", resp.StatusCode)
-	}
-}
-
-func TestDBConnection(t *testing.T) {
-	dbSql, _, err := database.NewDBConnection(":memory:")
-	if err != nil {
-		t.Fatalf("Failed to connect to the database: %v", err)
-	}
-
-	if err := dbSql.Ping(); err != nil {
-		t.Fatalf("Database connection is not alive: %v", err)
 	}
 }

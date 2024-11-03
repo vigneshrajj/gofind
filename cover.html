@@ -55,19 +55,19 @@
 			<div id="nav">
 				<select id="files">
 				
-				<option value="file0">github.com/vigneshrajj/gofind/internal/database/commands.go (79.4%)</option>
+				<option value="file0">github.com/vigneshrajj/gofind/internal/database/commands.go (100.0%)</option>
 				
-				<option value="file1">github.com/vigneshrajj/gofind/internal/database/db.go (70.0%)</option>
+				<option value="file1">github.com/vigneshrajj/gofind/internal/database/db.go (100.0%)</option>
 				
-				<option value="file2">github.com/vigneshrajj/gofind/internal/handlers/commands.go (90.9%)</option>
+				<option value="file2">github.com/vigneshrajj/gofind/internal/handlers/commands.go (100.0%)</option>
 				
-				<option value="file3">github.com/vigneshrajj/gofind/internal/handlers/query.go (86.6%)</option>
+				<option value="file3">github.com/vigneshrajj/gofind/internal/handlers/query.go (93.2%)</option>
 				
 				<option value="file4">github.com/vigneshrajj/gofind/internal/handlers/utilities.go (100.0%)</option>
 				
 				<option value="file5">github.com/vigneshrajj/gofind/internal/helpers/helpers.go (100.0%)</option>
 				
-				<option value="file6">github.com/vigneshrajj/gofind/internal/server/server.go (76.0%)</option>
+				<option value="file6">github.com/vigneshrajj/gofind/internal/server/server.go (89.5%)</option>
 				
 				<option value="file7">github.com/vigneshrajj/gofind/internal/templates/templates.go (100.0%)</option>
 				
@@ -86,6 +86,8 @@
 		<pre class="file" id="file0" style="display: none">package database
 
 import (
+        "errors"
+
         "github.com/vigneshrajj/gofind/models"
         "gorm.io/gorm"
 )
@@ -97,16 +99,13 @@ func CreateCommand(db *gorm.DB, command models.Command) error <span class="cov8"
         <span class="cov8" title="1">return nil</span>
 }
 
-func FirstOrCreateCommand(db *gorm.DB, command models.Command) error <span class="cov8" title="1">{
-        if err := db.FirstOrCreate(&amp;command).Error; err != nil </span><span class="cov0" title="0">{
-                return err
-        }</span>
-        <span class="cov8" title="1">return nil</span>
-}
+func FirstOrCreateCommand(db *gorm.DB, command models.Command) <span class="cov8" title="1">{
+        db.FirstOrCreate(&amp;command)
+}</span>
 
 func DeleteCommand(db *gorm.DB, alias string) error <span class="cov8" title="1">{
-        if err := db.Delete(&amp;models.Command{}, "alias=? AND is_default=?", alias, false).Error; err != nil </span><span class="cov0" title="0">{
-                return err
+        if rowsAffected := db.Delete(&amp;models.Command{}, "alias=? AND is_default=?", alias, false).RowsAffected; rowsAffected == 0 </span><span class="cov8" title="1">{
+                return errors.New("Command not found")
         }</span>
         <span class="cov8" title="1">return nil</span>
 }
@@ -117,36 +116,30 @@ func ListCommands(db *gorm.DB) []models.Command <span class="cov8" title="1">{
         return commands
 }</span>
 
-func SearchCommand(db *gorm.DB, alias string, partialMatch bool) (models.Command, error) <span class="cov8" title="1">{
+func SearchCommand(db *gorm.DB, alias string, partialMatch bool) models.Command <span class="cov8" title="1">{
         var command models.Command
         if partialMatch </span><span class="cov8" title="1">{
-                if err := db.Where("alias LIKE ?", alias+"%").Order("LENGTH(alias) ASC").Find(&amp;command).Error; err != nil </span><span class="cov0" title="0">{
-                        return command, err
-                }</span>
-        } else<span class="cov8" title="1"> {
-                if err := db.Where("alias=?", alias).Find(&amp;command).Error; err != nil </span><span class="cov0" title="0">{
-                        return command, err
-                }</span>
-        }
-        <span class="cov8" title="1">return command, nil</span>
+                db.Where("alias LIKE ?", alias+"%").Order("LENGTH(alias) ASC").Find(&amp;command)
+        }</span> else<span class="cov8" title="1"> {
+                db.Where("alias=?", alias).Find(&amp;command)
+        }</span>
+        <span class="cov8" title="1">return command</span>
 }
 
-func GetDefaultCommand(db *gorm.DB) (models.Command, error) <span class="cov8" title="1">{
+func GetDefaultCommand(db *gorm.DB) models.Command <span class="cov8" title="1">{
         var command models.Command
-        if err := db.Where("is_default=?", true).Find(&amp;command).Error; err != nil </span><span class="cov0" title="0">{
-                return command, err
-        }</span>
-        <span class="cov8" title="1">return command, nil</span>
-}
+        db.Where("is_default=?", true).Find(&amp;command)
+        return command
+}</span>
 
 func SetDefaultCommand(db *gorm.DB, alias string) error <span class="cov8" title="1">{
         var command models.Command
         var defaultCommand models.Command
-        if err := db.Where("alias=?", alias).Find(&amp;command).Error; err != nil </span><span class="cov0" title="0">{
-                return err
+        if db.Where("alias=?", alias).Find(&amp;command); command == (models.Command{}) </span><span class="cov8" title="1">{
+                return errors.New("Command not found")
         }</span>
-        <span class="cov8" title="1">if err := db.Where("is_default=?", true).Find(&amp;defaultCommand).Error; err != nil </span><span class="cov0" title="0">{
-                return err
+        <span class="cov8" title="1">if db.Where("is_default=?", true).Find(&amp;defaultCommand); defaultCommand == (models.Command{}) </span><span class="cov8" title="1">{
+                return errors.New("Default Command not found")
         }</span>
         <span class="cov8" title="1">command.IsDefault = true
         defaultCommand.IsDefault = false
@@ -160,7 +153,6 @@ func SetDefaultCommand(db *gorm.DB, alias string) error <span class="cov8" title
 
 import (
         "database/sql"
-        "log"
 
         "github.com/vigneshrajj/gofind/models"
         "gorm.io/driver/sqlite"
@@ -169,32 +161,21 @@ import (
 
 func NewDBConnection(dbFileName string) (*sql.DB, *gorm.DB, error) <span class="cov8" title="1">{
         db, err := gorm.Open(sqlite.Open(dbFileName), &amp;gorm.Config{})
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, nil, err
         }</span>
 
-        <span class="cov8" title="1">dbSql, err := db.DB()
-        if err != nil </span><span class="cov0" title="0">{
-                return nil, nil, err
-        }</span>
+        <span class="cov8" title="1">EnsureCommandTableExists(db)
 
-        <span class="cov8" title="1">err = EnsureCommandTableExists(db)
-        if err != nil </span><span class="cov0" title="0">{
-                return nil, nil, err
-        }</span>
-
-        <span class="cov8" title="1">return dbSql, db, nil</span>
+        dbSql, _ := db.DB()
+        return dbSql, db, nil</span>
 }
 
-func EnsureCommandTableExists(db *gorm.DB) error <span class="cov8" title="1">{
-        if err := db.AutoMigrate(&amp;models.Command{}); err != nil </span><span class="cov0" title="0">{
-                log.Fatalf("Failed to migrate the Command schema: %v", err)
-                return err
-        }</span>
-        <span class="cov8" title="1">return nil</span>
-}
+func EnsureCommandTableExists(db *gorm.DB) <span class="cov8" title="1">{
+        db.AutoMigrate(&amp;models.Command{})
+}</span>
 
-func EnsureDefaultCommandsExist(db *gorm.DB) error <span class="cov8" title="1">{
+func EnsureDefaultCommandsExist(db *gorm.DB) <span class="cov8" title="1">{
         defaultCommands := []models.Command{
                 {
                         Alias:       "g",
@@ -225,19 +206,12 @@ func EnsureDefaultCommandsExist(db *gorm.DB) error <span class="cov8" title="1">
                         IsDefault:   false,
                 },
         }
-        var anyerr error
         for _, command := range defaultCommands </span><span class="cov8" title="1">{
-                if err := FirstOrCreateCommand(db, command); err != nil </span><span class="cov0" title="0">{
-                        anyerr = err
-                }</span>
-        }
-        <span class="cov8" title="1">if anyerr != nil </span><span class="cov0" title="0">{
-                return anyerr
+                FirstOrCreateCommand(db, command)
         }</span>
-        <span class="cov8" title="1">return nil</span>
 }
 
-func EnsureAdditionalCommandsExist(db *gorm.DB) error <span class="cov8" title="1">{
+func EnsureAdditionalCommandsExist(db *gorm.DB) <span class="cov8" title="1">{
         additionalCommands := []models.Command{
                 {
                         Alias:       "y",
@@ -282,16 +256,9 @@ func EnsureAdditionalCommandsExist(db *gorm.DB) error <span class="cov8" title="
                         IsDefault:   false,
                 },
         }
-        var anyerr error
         for _, command := range additionalCommands </span><span class="cov8" title="1">{
-                if err := FirstOrCreateCommand(db, command); err != nil </span><span class="cov0" title="0">{
-                        anyerr = err
-                }</span>
-        }
-        <span class="cov8" title="1">if anyerr != nil </span><span class="cov0" title="0">{
-                return anyerr
+                FirstOrCreateCommand(db, command)
         }</span>
-        <span class="cov8" title="1">return nil</span>
 }
 </pre>
 		
@@ -347,7 +314,8 @@ func ChangeDefaultCommand(w http.ResponseWriter, r *http.Request, db *gorm.DB) <
         alias := r.URL.Query().Get("default")
         response := "Default Command has been changed successfully to " + alias
         err := database.SetDefaultCommand(db, alias)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
+                w.WriteHeader(http.StatusBadRequest)
                 response = "Error setting default command."
         }</span>
         <span class="cov8" title="1">w.Write([]byte(response))</span>
@@ -359,7 +327,7 @@ func HandleDeleteCommand(w http.ResponseWriter, data []string, db *gorm.DB) <spa
                 templates.MessageTemplate(w, "Invalid number of arguments provided. Delete command usage: #d &lt;alias&gt;")
                 return
         }</span>
-        <span class="cov8" title="1">command, err := database.SearchCommand(db, data[1], false)
+        <span class="cov8" title="1">command := database.SearchCommand(db, data[1], false)
         if command == (models.Command{}) </span><span class="cov8" title="1">{
                 w.WriteHeader(http.StatusBadRequest)
                 templates.MessageTemplate(w, "Command not found.")
@@ -370,13 +338,8 @@ func HandleDeleteCommand(w http.ResponseWriter, data []string, db *gorm.DB) <spa
                 templates.MessageTemplate(w, "Cannot delete built-in utilities or api commands.")
                 return
         }</span>
-        <span class="cov8" title="1">err = database.DeleteCommand(db, data[1])
-        if err != nil </span><span class="cov0" title="0">{
-                w.WriteHeader(http.StatusBadRequest)
-                templates.MessageTemplate(w, err.Error())
-                return
-        }</span>
-        <span class="cov8" title="1">fmt.Fprintf(w, "Deleted Command: %s", data[1])</span>
+        <span class="cov8" title="1">database.DeleteCommand(db, data[1])
+        fmt.Fprintf(w, "Deleted Command: %s", data[1])</span>
 }
 </pre>
 		
@@ -435,24 +398,13 @@ func replaceKeyWithValue(input string, choice string) string <span class="cov8" 
 
 func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *gorm.DB) <span class="cov8" title="1">{
         alias := data[0]
-        command, err := database.SearchCommand(db, alias, true)
-        if err != nil </span><span class="cov0" title="0">{
-                w.WriteHeader(http.StatusBadRequest)
-                templates.MessageTemplate(w, err.Error())
-                return
-        }</span>
+        command := database.SearchCommand(db, alias, true)
 
-        <span class="cov8" title="1">if command == (models.Command{}) </span><span class="cov8" title="1">{
-                var defaultCommand models.Command
-                defaultCommand, err = database.GetDefaultCommand(db)
-                if err != nil </span><span class="cov0" title="0">{
-                        w.WriteHeader(http.StatusBadRequest)
-                        templates.MessageTemplate(w, "Command not found.")
-                        return
-                }</span>
-                <span class="cov8" title="1">command = defaultCommand
-                data = append([]string{command.Alias}, data...)</span>
-        }
+        if command == (models.Command{}) </span><span class="cov8" title="1">{
+                defaultCommand := database.GetDefaultCommand(db)
+                command = defaultCommand
+                data = append([]string{command.Alias}, data...)
+        }</span>
 
         <span class="cov8" title="1">if command.Type == models.UtilCommand </span><span class="cov8" title="1">{
                 HandleUtilCommand(w, data)
@@ -620,7 +572,7 @@ import (
 )
 
 func HandleRoutes(db *gorm.DB) <span class="cov8" title="1">{
-        fs := http.FileServer(http.Dir("../static"))
+        fs := http.FileServer(http.Dir("./static"))
         http.Handle("/static/", http.StripPrefix("/static/", fs))
         http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) </span><span class="cov8" title="1">{
                 query := r.URL.Query().Get("query")
@@ -642,19 +594,11 @@ func StartServer() <span class="cov8" title="1">{
                 return
         }</span>
 
-        <span class="cov8" title="1">err = database.EnsureDefaultCommandsExist(db)
-        if err != nil </span><span class="cov0" title="0">{
-                log.Fatal(err)
-                return
-        }</span>
+        <span class="cov8" title="1">database.EnsureDefaultCommandsExist(db)
 
-        <span class="cov8" title="1">if config.EnableAdditionalCommands </span><span class="cov8" title="1">{
-                err = database.EnsureAdditionalCommandsExist(db)
-                if err != nil </span><span class="cov0" title="0">{
-                        log.Fatal(err)
-                        return
-                }</span>
-        }
+        if config.EnableAdditionalCommands </span><span class="cov8" title="1">{
+                database.EnsureAdditionalCommandsExist(db)
+        }</span>
 
         <span class="cov8" title="1">HandleRoutes(db)
 

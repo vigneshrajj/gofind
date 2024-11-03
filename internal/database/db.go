@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"log"
 
 	"github.com/vigneshrajj/gofind/models"
 	"gorm.io/driver/sqlite"
@@ -15,28 +14,17 @@ func NewDBConnection(dbFileName string) (*sql.DB, *gorm.DB, error) {
 		return nil, nil, err
 	}
 
-	dbSql, err := db.DB()
-	if err != nil {
-		return nil, nil, err
-	}
+	EnsureCommandTableExists(db)
 
-	err = EnsureCommandTableExists(db)
-	if err != nil {
-		return nil, nil, err
-	}
-
+	dbSql, _ := db.DB()
 	return dbSql, db, nil
 }
 
-func EnsureCommandTableExists(db *gorm.DB) error {
-	if err := db.AutoMigrate(&models.Command{}); err != nil {
-		log.Fatalf("Failed to migrate the Command schema: %v", err)
-		return err
-	}
-	return nil
+func EnsureCommandTableExists(db *gorm.DB) {
+	db.AutoMigrate(&models.Command{})
 }
 
-func EnsureDefaultCommandsExist(db *gorm.DB) error {
+func EnsureDefaultCommandsExist(db *gorm.DB) {
 	defaultCommands := []models.Command{
 		{
 			Alias:       "g",
@@ -67,19 +55,12 @@ func EnsureDefaultCommandsExist(db *gorm.DB) error {
 			IsDefault:   false,
 		},
 	}
-	var anyerr error
 	for _, command := range defaultCommands {
-		if err := FirstOrCreateCommand(db, command); err != nil {
-			anyerr = err
-		}
+		FirstOrCreateCommand(db, command)
 	}
-	if anyerr != nil {
-		return anyerr
-	}
-	return nil
 }
 
-func EnsureAdditionalCommandsExist(db *gorm.DB) error {
+func EnsureAdditionalCommandsExist(db *gorm.DB) {
 	additionalCommands := []models.Command{
 		{
 			Alias:       "y",
@@ -124,14 +105,7 @@ func EnsureAdditionalCommandsExist(db *gorm.DB) error {
 			IsDefault:   false,
 		},
 	}
-	var anyerr error
 	for _, command := range additionalCommands {
-		if err := FirstOrCreateCommand(db, command); err != nil {
-			anyerr = err
-		}
+		FirstOrCreateCommand(db, command)
 	}
-	if anyerr != nil {
-		return anyerr
-	}
-	return nil
 }

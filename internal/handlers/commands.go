@@ -51,6 +51,7 @@ func ChangeDefaultCommand(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	response := "Default Command has been changed successfully to " + alias
 	err := database.SetDefaultCommand(db, alias)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		response = "Error setting default command."
 	}
 	w.Write([]byte(response))
@@ -62,7 +63,7 @@ func HandleDeleteCommand(w http.ResponseWriter, data []string, db *gorm.DB) {
 		templates.MessageTemplate(w, "Invalid number of arguments provided. Delete command usage: #d <alias>")
 		return
 	}
-	command, err := database.SearchCommand(db, data[1], false)
+	command := database.SearchCommand(db, data[1], false)
 	if command == (models.Command{}) {
 		w.WriteHeader(http.StatusBadRequest)
 		templates.MessageTemplate(w, "Command not found.")
@@ -73,11 +74,6 @@ func HandleDeleteCommand(w http.ResponseWriter, data []string, db *gorm.DB) {
 		templates.MessageTemplate(w, "Cannot delete built-in utilities or api commands.")
 		return
 	}
-	err = database.DeleteCommand(db, data[1])
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		templates.MessageTemplate(w, err.Error())
-		return
-	}
+	database.DeleteCommand(db, data[1])
 	fmt.Fprintf(w, "Deleted Command: %s", data[1])
 }
