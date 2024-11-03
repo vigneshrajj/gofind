@@ -28,7 +28,7 @@ func setupServerTest() func() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			server.StartServer("db/gofind.db", ":3005")
+			server.StartServer(":memory:", ":3005")
 		}()
 		// Wait for the server to start
 		time.Sleep(100 * time.Millisecond)
@@ -108,7 +108,7 @@ func TestSearchEndpoint(t *testing.T) {
 
 func TestSetDefaultCommandEndpoint(t *testing.T) {
 	defer setupServerTest()()
-	resp, err := http.Get("http://localhost:3005/set-default-command?alias=g")
+	resp, err := http.Get("http://localhost:3005/set-default-command?default=g")
 	if err != nil {
 		t.Fatalf("Failed to connect to server: %v", err)
 	}
