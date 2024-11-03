@@ -12,6 +12,7 @@ body {
 	text-align: center;
 	color: var(--text-color);
 	font-family:Trebuchet MS,Helvetica,sans-serif;
+	flex-wrap: wrap;
 }
 
 #msg {
@@ -25,8 +26,12 @@ body {
 	display: none;
 }
 
+#command-type {
+	text-transform: capitalize;
+}
+
 table {
-	margin: 2rem auto;
+	margin: 1rem auto;
 	min-width: 40vw;
 }
 
@@ -41,6 +46,9 @@ td {
 }
 tr:nth-child(odd) {
 	background-color: var(--row-color);
+}
+tr td:last-child {
+	text-align: right;
 }
 
 input[type="radio"] {

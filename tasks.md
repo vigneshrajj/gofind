@@ -1,18 +1,23 @@
 x make default changable
 x show message page with 400 error
 x allow key:value alias
-- group commands in list view according to command type
+x group commands in list view according to command type
+x disable deleting built in util or api
 - add utils like 
   x base64
   x sha256
   - color picker
-  - rgx-hex-rgba
+  - rgb-hex-hsl
   - jq
-  - rg
-  - grep
   - calc
+  - jwt decoder
+- add apis like
+    - todoist
+- add more use cases like mailto, whatsapp
 x refactor
+- add more tests
 - dockerize
 - documentation
 - github public
 - host
+- allow editing a query or alias

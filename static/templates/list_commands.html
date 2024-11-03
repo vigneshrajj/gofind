@@ -14,40 +14,45 @@
 			<p id="msg"></p>
 		</span>
 
+		{{ range $Type, $Commands := .GroupedCommands }}
+		<h3 id="command-type">{{$Type}} Commands</h3>
 		<table>
 			<tr>
 				<th>Alias</th>
-				<th>Query</th>
+				{{if eq $Type "search"}}<th>Query</th>{{end}}
+				<th>Description</th>
 				<th>Default</th>
 			</tr>
-			{{range .Commands}}
+			{{range $Commands}}
 			<tr>
 				<td>{{.Alias}}</td>
-				<td>{{.Query}}</td>
+				{{if eq $Type "search"}}<td>{{.Query}}</td>{{end}}
+				<td>{{.Description.String}}</td>
 				{{if .IsDefault}}
 				<td>
-				<input type="radio" name="default" value="{{.Alias}}"
-					hx-get="/set-default-command"
-					hx-trigger="change"
-					hx-target="#msg" 
-					hx-swap="textContent"
-					checked
-				>
+					<input type="radio" name="default" value="{{.Alias}}"
+						hx-get="/set-default-command"
+						hx-trigger="change"
+						hx-target="#msg" 
+						hx-swap="textContent"
+						checked
+					>
 					<span class="graphical-radio"></span>
 				</td>
 				{{else}}
 				<td>
-				<input type="radio" name="default" value="{{.Alias}}"
-					hx-get="/set-default-command"
-					hx-trigger="change"
-					hx-target="#msg" 
-					hx-swap="textContent"
-				>
+					<input type="radio" name="default" value="{{.Alias}}"
+						hx-get="/set-default-command"
+						hx-trigger="change"
+						hx-target="#msg" 
+						hx-swap="textContent"
+					>
 					<span class="graphical-radio"></span>
 				</td>
 				{{end}}
 			</tr>
 			{{end}}
 		</table>
+		{{end}}
 	</body>
 </html>

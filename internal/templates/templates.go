@@ -8,12 +8,22 @@ import (
 )
 
 type ListCommandsPageData struct {
-	Commands []models.Command
+	GroupedCommands map[models.CommandType][]models.Command
+}
+
+func groupByType(commands []models.Command) map[models.CommandType][]models.Command {
+	groupedCommands := make(map[models.CommandType][]models.Command)
+
+	for _, command := range commands {
+		groupedCommands[command.Type] = append(groupedCommands[command.Type], command)
+	}
+
+	return groupedCommands
 }
 
 func ListCommandsTemplate(w http.ResponseWriter, commands []models.Command) {
 	data := ListCommandsPageData{
-		Commands: commands,
+		GroupedCommands: groupByType(commands),
 	}
 	tmpl, err := template.ParseFiles("static/templates/list_commands.html")
 	if err != nil {
