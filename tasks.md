@@ -12,7 +12,7 @@ x documentation
 - add apis like
     - todoist
 - add more use cases like mailto, whatsapp
-- add more tests
+x add more tests
 x github public
 - allow editing a query or alias
 
