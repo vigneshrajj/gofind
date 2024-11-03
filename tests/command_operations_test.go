@@ -16,10 +16,6 @@ func setupCommandsOperationsTest() func() {
 		panic(err)
 	}
 
-	if err := db.AutoMigrate(&models.Command{}); err != nil {
-		panic(err)
-	}
-
 	return func() {}
 }
 

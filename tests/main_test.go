@@ -1,12 +1,13 @@
 package tests
 
 import (
-	"github.com/vigneshrajj/gofind/internal/database"
-	"github.com/vigneshrajj/gofind/internal/server"
 	"io"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/vigneshrajj/gofind/internal/database"
+	"github.com/vigneshrajj/gofind/internal/server"
 
 	_ "github.com/mattn/go-sqlite3"
 	"gorm.io/gorm"
