@@ -2,10 +2,12 @@ package database
 
 import (
 	"database/sql"
+	"log"
+
+	"github.com/vigneshrajj/gofind/config"
 	"github.com/vigneshrajj/gofind/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"log"
 )
 
 func NewDBConnection(dbFileName string) (*sql.DB, *gorm.DB, error) {
@@ -22,6 +24,12 @@ func NewDBConnection(dbFileName string) (*sql.DB, *gorm.DB, error) {
 	err = EnsureCommandTableExists(db)
 	if err != nil {
 		return nil, nil, err
+	}
+	if config.EnableAdditionalCommands {
+		err = EnsureDefaultCommandsExist(db)
+		if err != nil {
+				return nil, nil, err
+		}
 	}
 
 	return dbSql, db, nil
@@ -68,6 +76,63 @@ func EnsureDefaultCommandsExist(db *gorm.DB) error {
 	}
 	var anyerr error
 	for _, command := range defaultCommands {
+		if err := FirstOrCreateCommand(db, command); err != nil {
+			anyerr = err
+		}
+	}
+	if anyerr != nil {
+		return anyerr
+	}
+	return nil
+}
+
+func EnsureAdditionalCommandsExist(db *gorm.DB) error {
+	additionalCommands := []models.Command{
+		{
+			Alias:       "y",
+			Query:       "https://www.youtube.com/results?search_query=%s",
+			Type:        models.SearchCommand,
+			Description: sql.NullString{String: "Youtube", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:       "ddg",
+			Query:       "https://duckduckgo.com/?q=%s",
+			Type:        models.SearchCommand,
+			Description: sql.NullString{String: "DuckDuckGo", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "ddl",
+			Query:       "https://lite.duckduckgo.com/lite/?q=%s",
+			Type:        models.SearchCommand,
+			Description: sql.NullString{String: "DuckDuckGo Lite", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "gh",
+			Query:       "https://github.com/search?q=%s&type=repositories",
+			Type:        models.SearchCommand,
+			Description: sql.NullString{String: "Github Repos", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "npm",
+			Query:       "https://www.npmjs.com/search?q=%s",
+			Type:        models.SearchCommand,
+			Description: sql.NullString{String: "Node Package Manager (NPM)", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "m",
+			Query:       "https://mail.google.com/mail/u/{r:0,vr:1}/#inbox",
+			Type:        models.SearchCommand,
+			Description: sql.NullString{String: "GMail", Valid: true},
+			IsDefault:   false,
+		},
+	}
+	var anyerr error
+	for _, command := range additionalCommands {
 		if err := FirstOrCreateCommand(db, command); err != nil {
 			anyerr = err
 		}

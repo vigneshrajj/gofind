@@ -1,5 +1,6 @@
 services:
-  app:
+  gofind:
+    image: vigneshrajj/gofind:latest
     build: .
     ports:
       - "3005:3005"

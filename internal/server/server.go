@@ -2,16 +2,16 @@ package server
 
 import (
 	"fmt"
-	"github.com/vigneshrajj/gofind/internal/database"
-	handler2 "github.com/vigneshrajj/gofind/internal/handlers"
 	"log"
 	"net/http"
+
+	"github.com/vigneshrajj/gofind/config"
+	"github.com/vigneshrajj/gofind/internal/database"
+	handler2 "github.com/vigneshrajj/gofind/internal/handlers"
 )
 
-const DbName = "db/gofind.db"
-
 func StartServer() {
-	_, db, err := database.NewDBConnection(DbName)
+	_, db, err := database.NewDBConnection(config.DbPath)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -33,9 +33,9 @@ func StartServer() {
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, "Server running on :3005")
+		fmt.Fprintf(w, "Server running on %s", config.Port)
 	})
 
-	log.Print("Starting server on :3005")
-	log.Fatal(http.ListenAndServe(":3005", nil))
+	log.Printf("Starting server on %s", config.Port)
+	log.Fatal(http.ListenAndServe(config.Port, nil))
 }

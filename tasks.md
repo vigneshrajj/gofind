@@ -1,8 +1,6 @@
-x make default changable
-x show message page with 400 error
-x allow key:value alias
-x group commands in list view according to command type
-x disable deleting built in util or api
+x env option to enable/disable additional commands
+x use env variables from environment
+- documentation
 - add utils like 
   x base64
   x sha256
@@ -14,11 +12,15 @@ x disable deleting built in util or api
 - add apis like
     - todoist
 - add more use cases like mailto, whatsapp
-x refactor
 - add more tests
-x dockerize
-    - env option to enable/disable additional commands
-- documentation
 - github public
-- host
 - allow editing a query or alias
+
+
+x make default changable
+x show message page with 400 error
+x allow key:value alias
+x group commands in list view according to command type
+x disable deleting built in util or api
+x dockerize
+x refactor
