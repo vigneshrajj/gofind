@@ -49,7 +49,7 @@ docker compose up -d
     - Shortcut: go
     - URL: http://localhost:3005/search?query=%s
 4. Click on the three dots icon next to GoFind and choose **Make default**
-5. Type `#l` to verify if the process was successful
+5. Type `#l` in the address bar to verify if the process was successful
 
 ### Additional Configurations
 
