@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/vigneshrajj/gofind/config"
 	"github.com/vigneshrajj/gofind/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -24,12 +23,6 @@ func NewDBConnection(dbFileName string) (*sql.DB, *gorm.DB, error) {
 	err = EnsureCommandTableExists(db)
 	if err != nil {
 		return nil, nil, err
-	}
-	if config.EnableAdditionalCommands {
-		err = EnsureAdditionalCommandsExist(db)
-		if err != nil {
-				return nil, nil, err
-		}
 	}
 
 	return dbSql, db, nil

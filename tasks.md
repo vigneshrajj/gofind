@@ -1,6 +1,6 @@
 x env option to enable/disable additional commands
 x use env variables from environment
-- documentation
+x documentation
 - add utils like 
   x base64
   x sha256
@@ -13,7 +13,7 @@ x use env variables from environment
     - todoist
 - add more use cases like mailto, whatsapp
 - add more tests
-- github public
+x github public
 - allow editing a query or alias
 
 

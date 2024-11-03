@@ -22,6 +22,14 @@ func StartServer() {
 		return
 	}
 
+	if config.EnableAdditionalCommands {
+		err = database.EnsureAdditionalCommandsExist(db)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+	}
+
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
