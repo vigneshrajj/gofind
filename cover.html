@@ -1,0 +1,780 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>database: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/vigneshrajj/gofind/internal/database/commands.go (79.4%)</option>
+				
+				<option value="file1">github.com/vigneshrajj/gofind/internal/database/db.go (70.0%)</option>
+				
+				<option value="file2">github.com/vigneshrajj/gofind/internal/handlers/commands.go (90.9%)</option>
+				
+				<option value="file3">github.com/vigneshrajj/gofind/internal/handlers/query.go (86.6%)</option>
+				
+				<option value="file4">github.com/vigneshrajj/gofind/internal/handlers/utilities.go (100.0%)</option>
+				
+				<option value="file5">github.com/vigneshrajj/gofind/internal/helpers/helpers.go (100.0%)</option>
+				
+				<option value="file6">github.com/vigneshrajj/gofind/internal/server/server.go (76.0%)</option>
+				
+				<option value="file7">github.com/vigneshrajj/gofind/internal/templates/templates.go (100.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package database
+
+import (
+        "github.com/vigneshrajj/gofind/models"
+        "gorm.io/gorm"
+)
+
+func CreateCommand(db *gorm.DB, command models.Command) error <span class="cov8" title="1">{
+        if err := db.Create(&amp;command).Error; err != nil </span><span class="cov8" title="1">{
+                return err
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+func FirstOrCreateCommand(db *gorm.DB, command models.Command) error <span class="cov8" title="1">{
+        if err := db.FirstOrCreate(&amp;command).Error; err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+func DeleteCommand(db *gorm.DB, alias string) error <span class="cov8" title="1">{
+        if err := db.Delete(&amp;models.Command{}, "alias=? AND is_default=?", alias, false).Error; err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+func ListCommands(db *gorm.DB) []models.Command <span class="cov8" title="1">{
+        var commands []models.Command
+        db.Find(&amp;commands)
+        return commands
+}</span>
+
+func SearchCommand(db *gorm.DB, alias string, partialMatch bool) (models.Command, error) <span class="cov8" title="1">{
+        var command models.Command
+        if partialMatch </span><span class="cov8" title="1">{
+                if err := db.Where("alias LIKE ?", alias+"%").Order("LENGTH(alias) ASC").Find(&amp;command).Error; err != nil </span><span class="cov0" title="0">{
+                        return command, err
+                }</span>
+        } else<span class="cov8" title="1"> {
+                if err := db.Where("alias=?", alias).Find(&amp;command).Error; err != nil </span><span class="cov0" title="0">{
+                        return command, err
+                }</span>
+        }
+        <span class="cov8" title="1">return command, nil</span>
+}
+
+func GetDefaultCommand(db *gorm.DB) (models.Command, error) <span class="cov8" title="1">{
+        var command models.Command
+        if err := db.Where("is_default=?", true).Find(&amp;command).Error; err != nil </span><span class="cov0" title="0">{
+                return command, err
+        }</span>
+        <span class="cov8" title="1">return command, nil</span>
+}
+
+func SetDefaultCommand(db *gorm.DB, alias string) error <span class="cov8" title="1">{
+        var command models.Command
+        var defaultCommand models.Command
+        if err := db.Where("alias=?", alias).Find(&amp;command).Error; err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">if err := db.Where("is_default=?", true).Find(&amp;defaultCommand).Error; err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov8" title="1">command.IsDefault = true
+        defaultCommand.IsDefault = false
+        db.Save(&amp;command)
+        db.Save(&amp;defaultCommand)
+        return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package database
+
+import (
+        "database/sql"
+        "log"
+
+        "github.com/vigneshrajj/gofind/models"
+        "gorm.io/driver/sqlite"
+        "gorm.io/gorm"
+)
+
+func NewDBConnection(dbFileName string) (*sql.DB, *gorm.DB, error) <span class="cov8" title="1">{
+        db, err := gorm.Open(sqlite.Open(dbFileName), &amp;gorm.Config{})
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, nil, err
+        }</span>
+
+        <span class="cov8" title="1">dbSql, err := db.DB()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, nil, err
+        }</span>
+
+        <span class="cov8" title="1">err = EnsureCommandTableExists(db)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, nil, err
+        }</span>
+
+        <span class="cov8" title="1">return dbSql, db, nil</span>
+}
+
+func EnsureCommandTableExists(db *gorm.DB) error <span class="cov8" title="1">{
+        if err := db.AutoMigrate(&amp;models.Command{}); err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Failed to migrate the Command schema: %v", err)
+                return err
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+func EnsureDefaultCommandsExist(db *gorm.DB) error <span class="cov8" title="1">{
+        defaultCommands := []models.Command{
+                {
+                        Alias:       "g",
+                        Query:       "https://www.google.com/search?q=%s",
+                        Type:        models.SearchCommand,
+                        Description: sql.NullString{String: "Google Search", Valid: true},
+                        IsDefault:   true,
+                },
+                {
+                        Alias:       "b64",
+                        Query:       "",
+                        Type:        models.UtilCommand,
+                        Description: sql.NullString{String: "Convert To Base 64 string", Valid: true},
+                        IsDefault:   false,
+                },
+                {
+                        Alias:       "d64",
+                        Query:       "",
+                        Type:        models.UtilCommand,
+                        Description: sql.NullString{String: "Decode Base 64 string", Valid: true},
+                        IsDefault:   false,
+                },
+                {
+                        Alias:       "sha256",
+                        Query:       "",
+                        Type:        models.UtilCommand,
+                        Description: sql.NullString{String: "Convert To SHA 256 string", Valid: true},
+                        IsDefault:   false,
+                },
+        }
+        var anyerr error
+        for _, command := range defaultCommands </span><span class="cov8" title="1">{
+                if err := FirstOrCreateCommand(db, command); err != nil </span><span class="cov0" title="0">{
+                        anyerr = err
+                }</span>
+        }
+        <span class="cov8" title="1">if anyerr != nil </span><span class="cov0" title="0">{
+                return anyerr
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+
+func EnsureAdditionalCommandsExist(db *gorm.DB) error <span class="cov8" title="1">{
+        additionalCommands := []models.Command{
+                {
+                        Alias:       "y",
+                        Query:       "https://www.youtube.com/results?search_query=%s",
+                        Type:        models.SearchCommand,
+                        Description: sql.NullString{String: "Youtube", Valid: true},
+                        IsDefault:   false,
+                },
+                {
+                        Alias:       "ddg",
+                        Query:       "https://duckduckgo.com/?q=%s",
+                        Type:        models.SearchCommand,
+                        Description: sql.NullString{String: "DuckDuckGo", Valid: true},
+                        IsDefault:   false,
+                },
+                {
+                        Alias:                         "ddl",
+                        Query:       "https://lite.duckduckgo.com/lite/?q=%s",
+                        Type:        models.SearchCommand,
+                        Description: sql.NullString{String: "DuckDuckGo Lite", Valid: true},
+                        IsDefault:   false,
+                },
+                {
+                        Alias:                         "gh",
+                        Query:       "https://github.com/search?q=%s&amp;type=repositories",
+                        Type:        models.SearchCommand,
+                        Description: sql.NullString{String: "Github Repos", Valid: true},
+                        IsDefault:   false,
+                },
+                {
+                        Alias:                         "npm",
+                        Query:       "https://www.npmjs.com/search?q=%s",
+                        Type:        models.SearchCommand,
+                        Description: sql.NullString{String: "Node Package Manager (NPM)", Valid: true},
+                        IsDefault:   false,
+                },
+                {
+                        Alias:                         "m",
+                        Query:       "https://mail.google.com/mail/u/{r:0,vr:1}/#inbox",
+                        Type:        models.SearchCommand,
+                        Description: sql.NullString{String: "GMail", Valid: true},
+                        IsDefault:   false,
+                },
+        }
+        var anyerr error
+        for _, command := range additionalCommands </span><span class="cov8" title="1">{
+                if err := FirstOrCreateCommand(db, command); err != nil </span><span class="cov0" title="0">{
+                        anyerr = err
+                }</span>
+        }
+        <span class="cov8" title="1">if anyerr != nil </span><span class="cov0" title="0">{
+                return anyerr
+        }</span>
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package handlers
+
+import (
+        "database/sql"
+        "fmt"
+        "github.com/vigneshrajj/gofind/internal/database"
+        "github.com/vigneshrajj/gofind/internal/templates"
+        "github.com/vigneshrajj/gofind/models"
+        "net/http"
+        "strings"
+
+        "gorm.io/gorm"
+)
+
+func HandleAddCommand(w http.ResponseWriter, data []string, db *gorm.DB) <span class="cov8" title="1">{
+        if len(data) &lt; 3 </span><span class="cov8" title="1">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, "Invalid number of arguments provided. Add command usage:\n#a &lt;alias&gt; &lt;url-with-args&gt; &lt;description(optional)&gt;")
+                return
+        }</span>
+
+        <span class="cov8" title="1">command := models.Command{
+                Alias: data[1],
+                Query: data[2],
+        }
+        if len(data) &gt; 3 </span><span class="cov8" title="1">{
+                command.Description = sql.NullString{String: strings.Join(data[3:], " "), Valid: true}
+        }</span>
+
+        <span class="cov8" title="1">err := database.CreateCommand(db, command)
+        if err != nil </span><span class="cov8" title="1">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, err.Error())
+                return
+        }</span>
+        <span class="cov8" title="1">templates.MessageTemplate(w, "Added Command: "+data[1]+", URL: "+data[2])</span>
+}
+
+func HandleListCommands(w http.ResponseWriter, data []string, db *gorm.DB) <span class="cov8" title="1">{
+        if len(data) != 1 </span><span class="cov8" title="1">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, "Invalid number of arguments provided. List command usage: #l")
+                return
+        }</span>
+        <span class="cov8" title="1">commands := database.ListCommands(db)
+        templates.ListCommandsTemplate(w, commands)</span>
+}
+
+func ChangeDefaultCommand(w http.ResponseWriter, r *http.Request, db *gorm.DB) <span class="cov8" title="1">{
+        alias := r.URL.Query().Get("default")
+        response := "Default Command has been changed successfully to " + alias
+        err := database.SetDefaultCommand(db, alias)
+        if err != nil </span><span class="cov0" title="0">{
+                response = "Error setting default command."
+        }</span>
+        <span class="cov8" title="1">w.Write([]byte(response))</span>
+}
+
+func HandleDeleteCommand(w http.ResponseWriter, data []string, db *gorm.DB) <span class="cov8" title="1">{
+        if len(data) != 2 </span><span class="cov8" title="1">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, "Invalid number of arguments provided. Delete command usage: #d &lt;alias&gt;")
+                return
+        }</span>
+        <span class="cov8" title="1">command, err := database.SearchCommand(db, data[1], false)
+        if command == (models.Command{}) </span><span class="cov8" title="1">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, "Command not found.")
+                return
+        }</span>
+        <span class="cov8" title="1">if command.Type == models.ApiCommand || command.Type == models.UtilCommand </span><span class="cov8" title="1">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, "Cannot delete built-in utilities or api commands.")
+                return
+        }</span>
+        <span class="cov8" title="1">err = database.DeleteCommand(db, data[1])
+        if err != nil </span><span class="cov0" title="0">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, err.Error())
+                return
+        }</span>
+        <span class="cov8" title="1">fmt.Fprintf(w, "Deleted Command: %s", data[1])</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package handlers
+
+import (
+        "fmt"
+        "github.com/vigneshrajj/gofind/internal/database"
+        "github.com/vigneshrajj/gofind/internal/templates"
+        "net/http"
+        "net/url"
+        "regexp"
+        "strings"
+
+        "github.com/vigneshrajj/gofind/models"
+        "gorm.io/gorm"
+)
+
+func isKeyValueArg(query string) bool <span class="cov8" title="1">{
+        bracketIndex := strings.Index(query, "{")
+        if bracketIndex == -1 </span><span class="cov8" title="1">{
+                return false
+        }</span>
+        <span class="cov8" title="1">colonIndex := strings.Index(query[bracketIndex:], ":")
+        if colonIndex == -1 </span><span class="cov8" title="1">{
+                return false
+        }</span>
+        <span class="cov8" title="1">return true</span>
+}
+
+func replaceKeyWithValue(input string, choice string) string <span class="cov8" title="1">{
+        re := regexp.MustCompile(`{([^}]*)}`)
+        matches := re.FindStringSubmatch(input)
+
+        if len(matches) == 0 </span><span class="cov0" title="0">{
+                return input
+        }</span>
+
+        <span class="cov8" title="1">content := matches[1]
+        keyValuePairs := strings.Split(content, ",")
+
+        kvMap := make(map[string]string)
+        for _, pair := range keyValuePairs </span><span class="cov8" title="1">{
+                parts := strings.SplitN(pair, ":", 2)
+                if len(parts) == 2 </span><span class="cov8" title="1">{
+                        kvMap[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+                }</span>
+        }
+
+        <span class="cov8" title="1">if value, found := kvMap[choice]; found </span><span class="cov8" title="1">{
+                return strings.Replace(input, matches[0], value, 1)
+        }</span>
+
+        <span class="cov8" title="1">return input</span>
+}
+
+func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *gorm.DB) <span class="cov8" title="1">{
+        alias := data[0]
+        command, err := database.SearchCommand(db, alias, true)
+        if err != nil </span><span class="cov0" title="0">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, err.Error())
+                return
+        }</span>
+
+        <span class="cov8" title="1">if command == (models.Command{}) </span><span class="cov8" title="1">{
+                var defaultCommand models.Command
+                defaultCommand, err = database.GetDefaultCommand(db)
+                if err != nil </span><span class="cov0" title="0">{
+                        w.WriteHeader(http.StatusBadRequest)
+                        templates.MessageTemplate(w, "Command not found.")
+                        return
+                }</span>
+                <span class="cov8" title="1">command = defaultCommand
+                data = append([]string{command.Alias}, data...)</span>
+        }
+
+        <span class="cov8" title="1">if command.Type == models.UtilCommand </span><span class="cov8" title="1">{
+                HandleUtilCommand(w, data)
+                return
+        }</span>
+
+        <span class="cov8" title="1">query := command.Query
+        if query == "" </span><span class="cov0" title="0">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, "Command not found.")
+                return
+        }</span>
+
+        <span class="cov8" title="1">startsWithHttp := strings.HasPrefix(query, "http://") || strings.HasPrefix(query, "https://")
+        if !startsWithHttp </span><span class="cov0" title="0">{
+                query = "https://" + query
+        }</span>
+
+        <span class="cov8" title="1">if strings.Contains(query, "%s") </span><span class="cov8" title="1">{
+                query = fmt.Sprintf(query, url.QueryEscape(strings.Join(data[1:], " ")))
+                http.Redirect(w, r, query, http.StatusFound)
+                return
+        }</span>
+
+        <span class="cov8" title="1">if isKeyValueArg(query) </span><span class="cov8" title="1">{
+                for i := 1; i &lt; len(data); i++ </span><span class="cov8" title="1">{
+                        query = replaceKeyWithValue(query, data[i])
+                }</span>
+                <span class="cov8" title="1">argCountInQuery := strings.Count(query, "{")
+                if argCountInQuery &gt; 0 </span><span class="cov8" title="1">{
+                        w.WriteHeader(http.StatusBadRequest)
+                        templates.MessageTemplate(w, "Invalid arguments provided")
+                        return
+                }</span>
+                <span class="cov8" title="1">http.Redirect(w, r, query, http.StatusFound)
+                return</span>
+        }
+
+        <span class="cov8" title="1">argCount := len(data) - 1
+        for i := argCount; i &gt;= 1; i-- </span><span class="cov8" title="1">{
+                query = strings.Replace(query, fmt.Sprintf("{%d}", i), data[i], -1)
+                query = strings.Replace(query, fmt.Sprintf("{%d}", i), data[i], -1)
+        }</span>
+
+        <span class="cov8" title="1">argCountInQuery := strings.Count(query, "{")
+        isNArgQuery := strings.Count(query, "%s") == 1
+        if argCountInQuery &gt; 0 &amp;&amp; !isNArgQuery </span><span class="cov8" title="1">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, "Invalid number of arguments provided")
+                return
+        }</span>
+
+        <span class="cov8" title="1">http.Redirect(w, r, query, http.StatusFound)</span>
+}
+
+func HandleQuery(w http.ResponseWriter, r *http.Request, query string, db *gorm.DB) <span class="cov8" title="1">{
+        if query == "" </span><span class="cov8" title="1">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, "Query cannot be empty")
+                return
+        }</span>
+        <span class="cov8" title="1">data := strings.Split(query, " ")
+        switch data[0] </span>{
+        case "#a":<span class="cov8" title="1">
+                HandleAddCommand(w, data, db)</span>
+        case "#d":<span class="cov8" title="1">
+                HandleDeleteCommand(w, data, db)</span>
+        case "#l":<span class="cov8" title="1">
+                HandleListCommands(w, data, db)</span>
+        default:<span class="cov8" title="1">
+                HandleRedirectQuery(w, r, data, db)</span>
+        }
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package handlers
+
+import (
+        "net/http"
+
+        "github.com/vigneshrajj/gofind/internal/helpers"
+        "github.com/vigneshrajj/gofind/internal/templates"
+)
+
+func HandleUtilCommand(w http.ResponseWriter, data []string) <span class="cov8" title="1">{
+        alias := data[0]
+        switch alias </span>{
+        case "b64":<span class="cov8" title="1">
+                HandleB64Util(w, data)</span>
+        case "d64":<span class="cov8" title="1">
+                HandleD64Util(w, data)</span>
+        case "sha256":<span class="cov8" title="1">
+                HandleSha256Util(w, data)</span>
+        }
+}
+
+func HandleSha256Util(w http.ResponseWriter, data []string) <span class="cov8" title="1">{
+        if len(data) != 2 </span><span class="cov8" title="1">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, "Invalid number of arguments provided. SHA256 encode command usage: sha256 &lt;string&gt;")
+                return
+        }</span>
+        <span class="cov8" title="1">encoded := helpers.Sha256(data[1])
+        templates.Sha256Template(w, encoded)</span>
+}
+
+func HandleD64Util(w http.ResponseWriter, data []string) <span class="cov8" title="1">{
+        if len(data) != 2 </span><span class="cov8" title="1">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, "Invalid number of arguments provided. Base64 Decode command usage: d64 &lt;string&gt;")
+                return
+        }</span>
+        <span class="cov8" title="1">decoded := helpers.GetB64Decode(data[1])
+        templates.Base64DecodeTemplate(w, decoded)</span>
+}
+
+func HandleB64Util(w http.ResponseWriter, data []string) <span class="cov8" title="1">{
+        if len(data) != 2 </span><span class="cov8" title="1">{
+                w.WriteHeader(http.StatusBadRequest)
+                templates.MessageTemplate(w, "Invalid number of arguments provided. Base64 command usage: b64 &lt;string&gt;")
+                return
+        }</span>
+        <span class="cov8" title="1">encoded := helpers.GetB64(data[1])
+        templates.Base64Template(w, encoded)</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package helpers
+
+import (
+        "crypto/sha256"
+        "encoding/base64"
+        "encoding/hex"
+)
+
+func GetB64(data string) string <span class="cov8" title="1">{
+        return base64.StdEncoding.EncodeToString([]byte(data))
+}</span>
+
+func GetB64Decode(data string) string <span class="cov8" title="1">{
+        decoded, _ := base64.StdEncoding.DecodeString(data)
+        return string(decoded)
+}</span>
+
+func Sha256(data string) string <span class="cov8" title="1">{
+        hash := sha256.New()
+        hash.Write([]byte(data))
+        hashedBytes := hash.Sum(nil)
+        hashedHex := hex.EncodeToString(hashedBytes)
+        return hashedHex
+}</span>
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package server
+
+import (
+        "fmt"
+        "log"
+        "net/http"
+
+        "github.com/vigneshrajj/gofind/config"
+        "github.com/vigneshrajj/gofind/internal/database"
+        "github.com/vigneshrajj/gofind/internal/handlers"
+        "gorm.io/gorm"
+)
+
+func HandleRoutes(db *gorm.DB) <span class="cov8" title="1">{
+        fs := http.FileServer(http.Dir("../static"))
+        http.Handle("/static/", http.StripPrefix("/static/", fs))
+        http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) </span><span class="cov8" title="1">{
+                query := r.URL.Query().Get("query")
+                handlers.HandleQuery(w, r, query, db)
+        }</span>)
+        <span class="cov8" title="1">http.HandleFunc("/set-default-command", func(w http.ResponseWriter, r *http.Request) </span><span class="cov8" title="1">{
+                handlers.ChangeDefaultCommand(w, r, db)
+        }</span>)
+
+        <span class="cov8" title="1">http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) </span><span class="cov8" title="1">{
+                fmt.Fprintf(w, "Server running on %s", config.Port)
+        }</span>)
+}
+
+func StartServer() <span class="cov8" title="1">{
+        _, db, err := database.NewDBConnection(config.DbPath)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+                return
+        }</span>
+
+        <span class="cov8" title="1">err = database.EnsureDefaultCommandsExist(db)
+        if err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+                return
+        }</span>
+
+        <span class="cov8" title="1">if config.EnableAdditionalCommands </span><span class="cov8" title="1">{
+                err = database.EnsureAdditionalCommandsExist(db)
+                if err != nil </span><span class="cov0" title="0">{
+                        log.Fatal(err)
+                        return
+                }</span>
+        }
+
+        <span class="cov8" title="1">HandleRoutes(db)
+
+        log.Printf("Starting server on %s", config.Port)
+        log.Fatal(http.ListenAndServe(config.Port, nil))</span>
+}
+</pre>
+		
+		<pre class="file" id="file7" style="display: none">package templates
+
+import (
+        "github.com/vigneshrajj/gofind/models"
+        "html/template"
+        "net/http"
+)
+
+type ListCommandsPageData struct {
+        GroupedCommands map[models.CommandType][]models.Command
+}
+
+func groupByType(commands []models.Command) map[models.CommandType][]models.Command <span class="cov8" title="1">{
+        groupedCommands := make(map[models.CommandType][]models.Command)
+
+        for _, command := range commands </span><span class="cov8" title="1">{
+                groupedCommands[command.Type] = append(groupedCommands[command.Type], command)
+        }</span>
+
+        <span class="cov8" title="1">return groupedCommands</span>
+}
+
+func ListCommandsTemplate(w http.ResponseWriter, commands []models.Command) <span class="cov8" title="1">{
+        data := ListCommandsPageData{
+                GroupedCommands: groupByType(commands),
+        }
+        tmpl := template.Must(template.ParseFiles("static/templates/list_commands.html"))
+        tmpl.Execute(w, data)
+}</span>
+
+type MessagePageData struct {
+        Message string
+}
+
+func MessageTemplate(w http.ResponseWriter, msg string) <span class="cov8" title="1">{
+        data := MessagePageData{
+                Message: msg,
+        }
+        tmpl := template.Must(template.ParseFiles("static/templates/message.html"))
+        tmpl.Execute(w, data)
+}</span>
+
+type B64PageType string
+
+const (
+        Encoded B64PageType = "encoded"
+        Decoded B64PageType = "decoded"
+)
+
+type B64PageData struct {
+        Value string
+        Type  B64PageType
+}
+
+func Base64Template(w http.ResponseWriter, encoded string) <span class="cov8" title="1">{
+        data := B64PageData{
+                Value: encoded,
+                Type:  Encoded,
+        }
+        tmpl := template.Must(template.ParseFiles("static/templates/base64.html"))
+        tmpl.Execute(w, data)
+}</span>
+
+func Base64DecodeTemplate(w http.ResponseWriter, decoded string) <span class="cov8" title="1">{
+        data := B64PageData{
+                Value: decoded,
+                Type:  Decoded,
+        }
+        tmpl := template.Must(template.ParseFiles("static/templates/base64.html"))
+        tmpl.Execute(w, data)
+}</span>
+
+type Sha256PageData struct {
+        Value string
+}
+
+func Sha256Template(w http.ResponseWriter, hashed string) <span class="cov8" title="1">{
+        data := Sha256PageData{
+                Value: hashed,
+        }
+        tmpl := template.Must(template.ParseFiles("static/templates/sha256.html"))
+        tmpl.Execute(w, data)
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

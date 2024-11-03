@@ -1,7 +1,6 @@
 package templates
 
 import (
-	"fmt"
 	"github.com/vigneshrajj/gofind/models"
 	"html/template"
 	"net/http"
@@ -25,15 +24,8 @@ func ListCommandsTemplate(w http.ResponseWriter, commands []models.Command) {
 	data := ListCommandsPageData{
 		GroupedCommands: groupByType(commands),
 	}
-	tmpl, err := template.ParseFiles("static/templates/list_commands.html")
-	if err != nil {
-		fmt.Fprint(w, "ListCommands Template not found.")
-		return
-	}
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		fmt.Fprint(w, "ListCommands Template couldn't be executed.")
-	}
+	tmpl := template.Must(template.ParseFiles("static/templates/list_commands.html"))
+	tmpl.Execute(w, data)
 }
 
 type MessagePageData struct {
@@ -44,15 +36,8 @@ func MessageTemplate(w http.ResponseWriter, msg string) {
 	data := MessagePageData{
 		Message: msg,
 	}
-	tmpl, err := template.ParseFiles("static/templates/message.html")
-	if err != nil {
-		fmt.Fprint(w, "MessageTemplate Template not found.")
-		return
-	}
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		fmt.Fprint(w, "MessageTemplate Template couldn't be executed.")
-	}
+	tmpl := template.Must(template.ParseFiles("static/templates/message.html"))
+	tmpl.Execute(w, data)
 }
 
 type B64PageType string
@@ -72,15 +57,8 @@ func Base64Template(w http.ResponseWriter, encoded string) {
 		Value: encoded,
 		Type:  Encoded,
 	}
-	tmpl, err := template.ParseFiles("static/templates/base64.html")
-	if err != nil {
-		fmt.Fprint(w, "Base64 Template not found.")
-		return
-	}
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		fmt.Fprint(w, "Base64 Template couldn't be executed.")
-	}
+	tmpl := template.Must(template.ParseFiles("static/templates/base64.html"))
+	tmpl.Execute(w, data)
 }
 
 func Base64DecodeTemplate(w http.ResponseWriter, decoded string) {
@@ -88,15 +66,8 @@ func Base64DecodeTemplate(w http.ResponseWriter, decoded string) {
 		Value: decoded,
 		Type:  Decoded,
 	}
-	tmpl, err := template.ParseFiles("static/templates/base64.html")
-	if err != nil {
-		fmt.Fprint(w, "Base64 Template not found.")
-		return
-	}
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		fmt.Fprint(w, "Base64 Template couldn't be executed.")
-	}
+	tmpl := template.Must(template.ParseFiles("static/templates/base64.html"))
+	tmpl.Execute(w, data)
 }
 
 type Sha256PageData struct {
@@ -107,13 +78,6 @@ func Sha256Template(w http.ResponseWriter, hashed string) {
 	data := Sha256PageData{
 		Value: hashed,
 	}
-	tmpl, err := template.ParseFiles("static/templates/sha256.html")
-	if err != nil {
-		fmt.Fprint(w, "Sha256 Template not found.")
-		return
-	}
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		fmt.Fprint(w, "Sha256 Template couldn't be executed.")
-	}
+	tmpl := template.Must(template.ParseFiles("static/templates/sha256.html"))
+	tmpl.Execute(w, data)
 }

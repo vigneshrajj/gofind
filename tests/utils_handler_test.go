@@ -22,16 +22,48 @@ func TestB64UtilCommand(t *testing.T) {
 	}
 }
 
+func TestB64UtilCommandWithInvalidArguments(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "b64"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+
+	handlers.HandleQuery(w, r, query, db)
+	resp := w.Result()
+
+	if resp.StatusCode != 400 {
+		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
+	}
+}
+
 func TestD64UtilCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "d64 dGVzdA=="
 	urlEncodedQuery := url.QueryEscape(query)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+
 	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
+
 	if resp.StatusCode != 200 {
 		t.Fatalf("Expected status code 200, but got %v", resp.StatusCode)
+	}
+}
+
+func TestD64UtilCommandWithInvalidArguments(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "d64"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+
+	handlers.HandleQuery(w, r, query, db)
+	resp := w.Result()
+
+	if resp.StatusCode != 400 {
+		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
 	}
 }
 
@@ -41,9 +73,26 @@ func TestSha256UtilCommand(t *testing.T) {
 	urlEncodedQuery := url.QueryEscape(query)
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+
 	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
+
 	if resp.StatusCode != 200 {
 		t.Fatalf("Expected status code 200, but got %v", resp.StatusCode)
+	}
+}
+
+func TestSha256UtilCommandWithInvalidArguments(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "sha256"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+
+	handlers.HandleQuery(w, r, query, db)
+	resp := w.Result()
+
+	if resp.StatusCode != 400 {
+		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
 	}
 }

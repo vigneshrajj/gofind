@@ -16,14 +16,7 @@ func HandleUtilCommand(w http.ResponseWriter, data []string) {
 		HandleD64Util(w, data)
 	case "sha256":
 		HandleSha256Util(w, data)
-	default:
-		HandleUtilNotFound(w)
 	}
-}
-
-func HandleUtilNotFound(w http.ResponseWriter) {
-	w.WriteHeader(http.StatusBadRequest)
-	templates.MessageTemplate(w, "Command not found.")
 }
 
 func HandleSha256Util(w http.ResponseWriter, data []string) {

@@ -55,6 +55,17 @@ func TestAddCommand(t *testing.T) {
 	}
 }
 
+func TestAddCommandWithDescription(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#a alias https://url description"
+	w := httptest.NewRecorder()
+	handlers.HandleQuery(w, nil, query, db)
+	resp := w.Result()
+	if resp.StatusCode != 200 {
+		t.Fatalf("Expected status code 200, but got %v", resp.StatusCode)
+	}
+}
+
 func TestAddDuplicateCommand(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://url"
@@ -147,6 +158,17 @@ func TestListCommandsQuery(t *testing.T) {
 
 	if resp.StatusCode != 200 {
 		t.Fatalf("Expected status code 200, but got %v", resp.StatusCode)
+	}
+}
+
+func TestInvalidListCommandsQuery(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#l invalid"
+	w := httptest.NewRecorder()
+	handlers.HandleQuery(w, nil, query, db)
+	resp := w.Result()
+	if resp.StatusCode != 400 {
+		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
 	}
 }
 
@@ -370,6 +392,44 @@ func TestRedirectWithInvalidArgs(t *testing.T) {
 	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
 
+	if resp.StatusCode != 400 {
+		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
+	}
+}
+
+func TestChangeDefaultCommand(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#a alias https://google.com"
+	w := httptest.NewRecorder()
+	handlers.HandleQuery(w, nil, query, db)
+	r := httptest.NewRequest("GET", "http://localhost:3005/set-default-command?default=alias", nil)
+	w = httptest.NewRecorder()
+	handlers.ChangeDefaultCommand(w, r, db)
+	command, err := database.GetDefaultCommand(db)
+	if err != nil {
+		t.Fatalf("Failed to get default command: %v", err)
+	}
+	if command == (models.Command{}) {
+		t.Fatalf("Expected 1 command, got %d", 0)
+	}
+	if command.Alias != "alias" {
+		t.Fatalf("Expected default command alias to be 'alias', but got %v", command.Alias)
+	}
+}
+
+func TestDeleteUtilCommand(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	command := models.Command{
+		Alias: "alias",
+		Query: "https://google.com",
+		Type: models.UtilCommand,
+		IsDefault: true,
+	}
+	database.CreateCommand(db, command)
+	query := "#d alias"
+	w := httptest.NewRecorder()
+	handlers.HandleQuery(w, nil, query, db)
+	resp := w.Result()
 	if resp.StatusCode != 400 {
 		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
 	}
