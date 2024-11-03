@@ -27,11 +27,10 @@ func HandleRoutes(db *gorm.DB) {
 	})
 }
 
-func StartServer() {
-	_, db, err := database.NewDBConnection(config.DbPath)
+func StartServer(DbPath string, Port string) error {
+	_, db, err := database.NewDBConnection(DbPath)
 	if err != nil {
-		log.Fatal(err)
-		return
+		return err
 	}
 
 	database.EnsureDefaultCommandsExist(db)
@@ -42,6 +41,8 @@ func StartServer() {
 
 	HandleRoutes(db)
 
-	log.Printf("Starting server on %s", config.Port)
-	log.Fatal(http.ListenAndServe(config.Port, nil))
+	log.Printf("Starting server on %s", Port)
+	log.Fatal(http.ListenAndServe(Port, nil))
+	return nil
 }
+

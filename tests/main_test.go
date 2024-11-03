@@ -28,7 +28,7 @@ func setupServerTest() func() {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			server.StartServer()
+			server.StartServer("db/gofind.db", ":3005")
 		}()
 		// Wait for the server to start
 		time.Sleep(100 * time.Millisecond)
@@ -58,6 +58,15 @@ func TestServerIsRunning(t *testing.T) {
 
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Expected status code 200, but got %v", resp.StatusCode)
+	}
+}
+
+
+func TestServerFailWithInvalidDbPath(t *testing.T) {
+	err := server.StartServer("db/db/invalid.db", ":3005")
+
+	if err == nil {
+		t.Fatalf("Expected an error, but got nil")
 	}
 }
 

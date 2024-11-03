@@ -190,6 +190,27 @@ func TestRedirectQuery(t *testing.T) {
 	}
 }
 
+func TestRedirectWithoutHttp(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#a alias google.com"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+	handlers.HandleQuery(w, r, query, db)
+	w = httptest.NewRecorder()
+	query = "alias"
+
+	handlers.HandleQuery(w, r, query, db)
+	resp := w.Result()
+
+	if resp.StatusCode != 302 {
+		t.Fatalf("Expected status code 302, but got %v", resp.StatusCode)
+	}
+	if resp.Header.Get("Location") != "https://google.com" {
+		t.Fatalf("Expected Location header to be 'https://google.com', but got %v", resp.Header.Get("Location"))
+	}
+}
+
 func TestRedirectByPartialMatch(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com"
@@ -358,6 +379,23 @@ func TestRedirectWithMultipleKeyValueArg(t *testing.T) {
 	}
 }
 
+
+func TestRedirectWithExtraKeyValueArg(t *testing.T) {
+	defer setupQueryHandlerTest()()
+	query := "#a alias https://google.com/search?q={key:val,key2:val2,key3:val3}"
+	urlEncodedQuery := url.QueryEscape(query)
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
+	handlers.HandleQuery(w, r, query, db)
+	w = httptest.NewRecorder()
+	query = "alias key2 key3"
+	handlers.HandleQuery(w, r, query, db)
+	resp := w.Result()
+	if resp.StatusCode != 400 {
+		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
+	}
+}
+
 func TestRedirectWithInvalidKeyValueArg(t *testing.T) {
 	defer setupQueryHandlerTest()()
 	query := "#a alias https://google.com/search?q={key:val,key2:val2,key3:val3}"
@@ -368,9 +406,11 @@ func TestRedirectWithInvalidKeyValueArg(t *testing.T) {
 	w = httptest.NewRecorder()
 	query = "alias abc"
 
+	r = httptest.NewRequest("GET", "http://localhost:3005/search?query="+urlEncodedQuery, nil)
 	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
 
+	t.Log(resp.Header.Get("Location"))
 	if resp.StatusCode != 400 {
 		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
 	}

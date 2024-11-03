@@ -61,13 +61,13 @@
 				
 				<option value="file2">github.com/vigneshrajj/gofind/internal/handlers/commands.go (100.0%)</option>
 				
-				<option value="file3">github.com/vigneshrajj/gofind/internal/handlers/query.go (93.2%)</option>
+				<option value="file3">github.com/vigneshrajj/gofind/internal/handlers/query.go (100.0%)</option>
 				
 				<option value="file4">github.com/vigneshrajj/gofind/internal/handlers/utilities.go (100.0%)</option>
 				
 				<option value="file5">github.com/vigneshrajj/gofind/internal/helpers/helpers.go (100.0%)</option>
 				
-				<option value="file6">github.com/vigneshrajj/gofind/internal/server/server.go (89.5%)</option>
+				<option value="file6">github.com/vigneshrajj/gofind/internal/server/server.go (100.0%)</option>
 				
 				<option value="file7">github.com/vigneshrajj/gofind/internal/templates/templates.go (100.0%)</option>
 				
@@ -346,13 +346,15 @@ func HandleDeleteCommand(w http.ResponseWriter, data []string, db *gorm.DB) <spa
 		<pre class="file" id="file3" style="display: none">package handlers
 
 import (
+        "errors"
         "fmt"
-        "github.com/vigneshrajj/gofind/internal/database"
-        "github.com/vigneshrajj/gofind/internal/templates"
         "net/http"
         "net/url"
         "regexp"
         "strings"
+
+        "github.com/vigneshrajj/gofind/internal/database"
+        "github.com/vigneshrajj/gofind/internal/templates"
 
         "github.com/vigneshrajj/gofind/models"
         "gorm.io/gorm"
@@ -370,15 +372,11 @@ func isKeyValueArg(query string) bool <span class="cov8" title="1">{
         <span class="cov8" title="1">return true</span>
 }
 
-func replaceKeyWithValue(input string, choice string) string <span class="cov8" title="1">{
+func replaceKeyWithValue(input string, choice string) (string, error) <span class="cov8" title="1">{
         re := regexp.MustCompile(`{([^}]*)}`)
         matches := re.FindStringSubmatch(input)
 
-        if len(matches) == 0 </span><span class="cov0" title="0">{
-                return input
-        }</span>
-
-        <span class="cov8" title="1">content := matches[1]
+        content := matches[1]
         keyValuePairs := strings.Split(content, ",")
 
         kvMap := make(map[string]string)
@@ -390,10 +388,10 @@ func replaceKeyWithValue(input string, choice string) string <span class="cov8" 
         }
 
         <span class="cov8" title="1">if value, found := kvMap[choice]; found </span><span class="cov8" title="1">{
-                return strings.Replace(input, matches[0], value, 1)
+                return strings.Replace(input, matches[0], value, 1), nil
+        }</span> else<span class="cov8" title="1"> {
+                return input, errors.New("Invalid Argument Provided.")
         }</span>
-
-        <span class="cov8" title="1">return input</span>
 }
 
 func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *gorm.DB) <span class="cov8" title="1">{
@@ -412,14 +410,9 @@ func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, 
         }</span>
 
         <span class="cov8" title="1">query := command.Query
-        if query == "" </span><span class="cov0" title="0">{
-                w.WriteHeader(http.StatusBadRequest)
-                templates.MessageTemplate(w, "Command not found.")
-                return
-        }</span>
 
-        <span class="cov8" title="1">startsWithHttp := strings.HasPrefix(query, "http://") || strings.HasPrefix(query, "https://")
-        if !startsWithHttp </span><span class="cov0" title="0">{
+        startsWithHttp := strings.HasPrefix(query, "http://") || strings.HasPrefix(query, "https://")
+        if !startsWithHttp </span><span class="cov8" title="1">{
                 query = "https://" + query
         }</span>
 
@@ -430,15 +423,23 @@ func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, 
         }</span>
 
         <span class="cov8" title="1">if isKeyValueArg(query) </span><span class="cov8" title="1">{
-                for i := 1; i &lt; len(data); i++ </span><span class="cov8" title="1">{
-                        query = replaceKeyWithValue(query, data[i])
-                }</span>
-                <span class="cov8" title="1">argCountInQuery := strings.Count(query, "{")
-                if argCountInQuery &gt; 0 </span><span class="cov8" title="1">{
+                argsCount := strings.Count(query, "{")
+                inputArgsCount := len(data) - 1
+                if argsCount != inputArgsCount </span><span class="cov8" title="1">{
                         w.WriteHeader(http.StatusBadRequest)
                         templates.MessageTemplate(w, "Invalid arguments provided")
                         return
                 }</span>
+
+                <span class="cov8" title="1">for i := 1; i &lt; len(data); i++ </span><span class="cov8" title="1">{
+                        var err error
+                        query, err = replaceKeyWithValue(query, data[i])
+                        if err != nil </span><span class="cov8" title="1">{
+                                w.WriteHeader(http.StatusBadRequest)
+                                templates.MessageTemplate(w, err.Error())
+                                return
+                        }</span>
+                }
                 <span class="cov8" title="1">http.Redirect(w, r, query, http.StatusFound)
                 return</span>
         }
@@ -587,11 +588,10 @@ func HandleRoutes(db *gorm.DB) <span class="cov8" title="1">{
         }</span>)
 }
 
-func StartServer() <span class="cov8" title="1">{
-        _, db, err := database.NewDBConnection(config.DbPath)
-        if err != nil </span><span class="cov0" title="0">{
-                log.Fatal(err)
-                return
+func StartServer(DbPath string, Port string) error <span class="cov8" title="1">{
+        _, db, err := database.NewDBConnection(DbPath)
+        if err != nil </span><span class="cov8" title="1">{
+                return err
         }</span>
 
         <span class="cov8" title="1">database.EnsureDefaultCommandsExist(db)
@@ -602,9 +602,11 @@ func StartServer() <span class="cov8" title="1">{
 
         <span class="cov8" title="1">HandleRoutes(db)
 
-        log.Printf("Starting server on %s", config.Port)
-        log.Fatal(http.ListenAndServe(config.Port, nil))</span>
+        log.Printf("Starting server on %s", Port)
+        log.Fatal(http.ListenAndServe(Port, nil))
+        return nil</span>
 }
+
 </pre>
 		
 		<pre class="file" id="file7" style="display: none">package templates

@@ -1,13 +1,15 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
-	"github.com/vigneshrajj/gofind/internal/database"
-	"github.com/vigneshrajj/gofind/internal/templates"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
+
+	"github.com/vigneshrajj/gofind/internal/database"
+	"github.com/vigneshrajj/gofind/internal/templates"
 
 	"github.com/vigneshrajj/gofind/models"
 	"gorm.io/gorm"
@@ -25,13 +27,9 @@ func isKeyValueArg(query string) bool {
 	return true
 }
 
-func replaceKeyWithValue(input string, choice string) string {
+func replaceKeyWithValue(input string, choice string) (string, error) {
 	re := regexp.MustCompile(`{([^}]*)}`)
 	matches := re.FindStringSubmatch(input)
-
-	if len(matches) == 0 {
-		return input
-	}
 
 	content := matches[1]
 	keyValuePairs := strings.Split(content, ",")
@@ -45,10 +43,10 @@ func replaceKeyWithValue(input string, choice string) string {
 	}
 
 	if value, found := kvMap[choice]; found {
-		return strings.Replace(input, matches[0], value, 1)
+		return strings.Replace(input, matches[0], value, 1), nil
+	} else {
+		return input, errors.New("Invalid Argument Provided.")
 	}
-
-	return input
 }
 
 func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *gorm.DB) {
@@ -67,11 +65,6 @@ func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, 
 	}
 
 	query := command.Query
-	if query == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		templates.MessageTemplate(w, "Command not found.")
-		return
-	}
 
 	startsWithHttp := strings.HasPrefix(query, "http://") || strings.HasPrefix(query, "https://")
 	if !startsWithHttp {
@@ -85,14 +78,22 @@ func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, 
 	}
 
 	if isKeyValueArg(query) {
-		for i := 1; i < len(data); i++ {
-			query = replaceKeyWithValue(query, data[i])
-		}
-		argCountInQuery := strings.Count(query, "{")
-		if argCountInQuery > 0 {
+		argsCount := strings.Count(query, "{")
+		inputArgsCount := len(data) - 1
+		if argsCount != inputArgsCount {
 			w.WriteHeader(http.StatusBadRequest)
 			templates.MessageTemplate(w, "Invalid arguments provided")
 			return
+		}
+
+		for i := 1; i < len(data); i++ {
+			var err error
+			query, err = replaceKeyWithValue(query, data[i])
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				templates.MessageTemplate(w, err.Error())
+				return
+			}
 		}
 		http.Redirect(w, r, query, http.StatusFound)
 		return
