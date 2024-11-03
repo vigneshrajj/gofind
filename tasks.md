@@ -16,7 +16,8 @@ x disable deleting built in util or api
 - add more use cases like mailto, whatsapp
 x refactor
 - add more tests
-- dockerize
+x dockerize
+    - env option to enable/disable additional commands
 - documentation
 - github public
 - host

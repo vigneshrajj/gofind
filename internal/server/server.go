@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-const DbName = "gofind.db"
+const DbName = "db/gofind.db"
 
 func StartServer() {
 	_, db, err := database.NewDBConnection(DbName)
