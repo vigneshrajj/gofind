@@ -5,4 +5,4 @@ services:
     ports:
       - "3005:3005"
     volumes:
-      - ./db:/app/db
+      - ./db:/db
