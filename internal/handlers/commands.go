@@ -68,6 +68,11 @@ func HandleDeleteCommand(w http.ResponseWriter, data []string, db *gorm.DB) {
 		templates.MessageTemplate(w, "Command not found.")
 		return
 	}
+	if command.Type == models.ApiCommand || command.Type == models.UtilCommand {
+		w.WriteHeader(http.StatusBadRequest)
+		templates.MessageTemplate(w, "Cannot delete built-in utilities or api commands.")
+		return
+	}
 	err = database.DeleteCommand(db, data[1])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
