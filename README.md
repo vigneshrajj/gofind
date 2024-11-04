@@ -60,7 +60,7 @@ docker compose up -d
 ### Commands
 
 - `#l` - Lists all available commands
-- `#a <alias> <search_string>` - Adds a new command
+- `#a <alias> <search_query>` - Adds a new command
     - Example: `#a g google.com/search?q=%s`
     - Example: `#a g google.com/search?q={1}&q2={2}`
     - Example: `#a gm https://mail.google.com/mail/u/{r:0,vr:1}/#inbox`
@@ -69,6 +69,26 @@ docker compose up -d
 - `<alias> <argument1> <argument2> ...` - Searches the website denoted by the alias along with the provided arguments
     - Example: `g how to build a spaceship`
     - Example: `gm vr`
+
+##### Types of Arguments
+
+- **Search String arguments** -  `#a g google.com/search?q=%s`
+    - Use alias g followed by any number of arguments for searching
+    - `g how to make a hello world program in go`
+- **Numbered arguments** -  `#a g google.com/search?q={1}&q2={2}`
+    - Use alias g followed by 2 arguments and each of them will be placed at the respective places for searching
+    - `g abc efg` would become `https://google.com/search?q=abc&q2=efg`
+- **Key Value arguments** - `#a gm https://mail.google.com/mail/u/{r:0,vr:1}/#inbox`
+    - Use alias gm followed by specific key from the keys provided in the command (keys from above example are r, vr) and it will be replaced by the corresponding value (values from above example are 0, 1)
+    - `gm vr` would become `https://mail.google.com/mail/u/1/#inbox`
+
+##### Additional Utilities
+
+| Utility          | Alias  | Example               |
+|------------------|--------|-----------------------|
+| SHA 256 Encoding | sha256 | `sha256 abcd`         |
+| Base64 Encoding  | b64    | `b64 abcd`            |
+| Base64 Decoding  | d64    | `d64 <base64 string>` |
 
 ## Development
 
