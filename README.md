@@ -10,11 +10,13 @@ GoFind supercharges your browser address bar by providing short predictable alia
 - Lightweight and fast since it is built with technologies like Go and HTMX
 
 ## Requirements
-- Docker Compose
+- Docker or Docker Compose
 
 ## Getting Started
 
 ### Create a Compose File
+
+#### Docker Compose
 
 Copy the following into a new `docker-compose.yml` file and make any moditications as necessary:
 
@@ -31,11 +33,23 @@ services:
     restart: unless-stopped
 ```
 
-### Run the Application
-
 You can run the application using the following command:
 ```bash
 docker compose up -d
+```
+
+#### Docker
+
+Alternatively, you can run the following command in your terminal to achieve the same result:
+
+```bash
+docker run -d \
+  --name gofind \
+  -p 3005:3005 \
+  -v ./db:/app/db \
+  -e ENABLE_ADDITIONAL_COMMANDS=true \
+  --restart unless-stopped \
+  vigneshrajj/gofind:latest
 ```
 
 ### Set as default search engine
@@ -60,10 +74,11 @@ docker compose up -d
 ### Commands
 
 - `#l` - Lists all available commands
-- `#a <alias> <search_query>` - Adds a new command
+- `#a <alias> <search_query> <description(optional)>` - Adds a new command
     - Example: `#a g google.com/search?q=%s`
     - Example: `#a g google.com/search?q={1}&q2={2}`
     - Example: `#a gm https://mail.google.com/mail/u/{r:0,vr:1}/#inbox`
+    - Example: `#a d https://test.com Some description for the query`
 - `#d <alias>` - Deletes an existing command
     - Example: `#d gm`
 - `<alias> <argument1> <argument2> ...` - Searches the website denoted by the alias along with the provided arguments
