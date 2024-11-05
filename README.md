@@ -10,11 +10,13 @@ GoFind supercharges your browser address bar by providing short predictable alia
 - Lightweight and fast since it is built with technologies like Go and HTMX
 
 ## Requirements
-- Docker Compose
+- Docker or Docker Compose
 
 ## Getting Started
 
 ### Create a Compose File
+
+#### Docker Compose
 
 Copy the following into a new `docker-compose.yml` file and make any moditications as necessary:
 
@@ -31,11 +33,23 @@ services:
     restart: unless-stopped
 ```
 
-### Run the Application
-
 You can run the application using the following command:
 ```bash
 docker compose up -d
+```
+
+#### Docker
+
+Alternatively, you can run the following command in your terminal to achieve the same result:
+
+```bash
+docker run -d \
+  --name gofind \
+  -p 3005:3005 \
+  -v ./db:/app/db \
+  -e ENABLE_ADDITIONAL_COMMANDS=true \
+  --restart unless-stopped \
+  vigneshrajj/gofind:latest
 ```
 
 ### Set as default search engine
@@ -60,15 +74,36 @@ docker compose up -d
 ### Commands
 
 - `#l` - Lists all available commands
-- `#a <alias> <search_string>` - Adds a new command
+- `#a <alias> <search_query> <description(optional)>` - Adds a new command
     - Example: `#a g google.com/search?q=%s`
     - Example: `#a g google.com/search?q={1}&q2={2}`
     - Example: `#a gm https://mail.google.com/mail/u/{r:0,vr:1}/#inbox`
+    - Example: `#a d https://test.com Some description for the query`
 - `#d <alias>` - Deletes an existing command
     - Example: `#d gm`
 - `<alias> <argument1> <argument2> ...` - Searches the website denoted by the alias along with the provided arguments
     - Example: `g how to build a spaceship`
     - Example: `gm vr`
+
+##### Types of Arguments
+
+- **Search String arguments** -  `#a g google.com/search?q=%s`
+    - Use alias g followed by any number of arguments for searching
+    - `g how to make a hello world program in go`
+- **Numbered arguments** -  `#a g google.com/search?q={1}&q2={2}`
+    - Use alias g followed by 2 arguments and each of them will be placed at the respective places for searching
+    - `g abc efg` would become `https://google.com/search?q=abc&q2=efg`
+- **Key Value arguments** - `#a gm https://mail.google.com/mail/u/{r:0,vr:1}/#inbox`
+    - Use alias gm followed by specific key from the keys provided in the command (keys from above example are r, vr) and it will be replaced by the corresponding value (values from above example are 0, 1)
+    - `gm vr` would become `https://mail.google.com/mail/u/1/#inbox`
+
+##### Additional Utilities
+
+| Utility          | Alias  | Example               |
+|------------------|--------|-----------------------|
+| SHA 256 Encoding | sha256 | `sha256 abcd`         |
+| Base64 Encoding  | b64    | `b64 abcd`            |
+| Base64 Decoding  | d64    | `d64 <base64 string>` |
 
 ## Development
 

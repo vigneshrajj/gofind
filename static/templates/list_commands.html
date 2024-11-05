@@ -19,15 +19,39 @@
 		<table>
 			<tr>
 				<th>Alias</th>
-				{{if eq $Type "search"}}<th>Query</th>{{end}}
+				{{if eq $Type "search"}}
+					<th>Query</th>
+					<th>Arguments</th>
+				{{end}}
 				<th>Description</th>
 				<th>Default</th>
 			</tr>
 			{{range $Commands}}
 			<tr>
 				<td>{{.Alias}}</td>
-				{{if eq $Type "search"}}<td>{{.Query}}</td>{{end}}
-				<td>{{.Description.String}}</td>
+
+				{{if eq $Type "search"}}
+					<td class="query">
+						<span class="hostname">{{.QueryHostname}}</span>
+						<span class="query-full">{{.Query}}</span>
+					</td>
+					<td class="args">
+						{{if eq .ArgType "num"}}
+							{{range .ArgsNum}}
+								<span class="arg num">{{"{"}}{{.}}{{"}"}}</span>
+							{{end}}
+						{{else if eq .ArgType "keyval"}}
+							{{range $Key, $Val := .ArgsKeyVal}}
+					<span class="arg keyval">{{$Key}}: {{$Val}}</span>
+							{{end}}
+						{{else}}
+							<span class="arg any">%s</span>
+						{{end}}
+					</td>
+				{{end}}
+
+				<td class="description">{{.Description.String}}</td>
+
 				{{if .IsDefault}}
 				<td>
 					<input type="radio" name="default" value="{{.Alias}}"

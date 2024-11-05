@@ -22,6 +22,7 @@ func HandleAddCommand(w http.ResponseWriter, data []string, db *gorm.DB) {
 	command := models.Command{
 		Alias: data[1],
 		Query: data[2],
+		Type: models.SearchCommand,
 	}
 	if len(data) > 3 {
 		command.Description = sql.NullString{String: strings.Join(data[3:], " "), Valid: true}
