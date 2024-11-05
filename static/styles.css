@@ -33,6 +33,7 @@ body {
 table {
 	margin: 1rem auto;
 	min-width: 40vw;
+	max-width: 75vw;
 }
 
 th {
@@ -44,6 +45,59 @@ td {
 	padding: .3rem 1rem;
 	text-align: start;
 }
+
+td.query {
+	max-width: 30vw;
+	position: relative;
+}
+
+td.query .hostname {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+td.query .query-full {
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	white-space: nowrap;
+	background-color: white;
+	padding: .3rem .6rem;
+	border-radius: .3rem;
+	border: 1px solid var(--text-color);
+	display: none;
+}
+
+td.query:hover .query-full {
+	display: block;
+}
+
+td.args {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .3rem;
+	max-width: 12rem;
+}
+
+span.arg {
+	background-color: var(--primary-color);
+	padding: 3px;
+	border-radius: 5px;
+	color: #006A67;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+td.description {
+	max-width: 15vw;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 tr:nth-child(odd) {
 	background-color: var(--row-color);
 }
