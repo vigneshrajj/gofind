@@ -2,6 +2,7 @@ package templates
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -42,6 +43,8 @@ func ExtractNumArgs(query string) []int {
 		num, err := strconv.Atoi(match[1])
 		if err == nil {
 			result = append(result, num)
+		} else {
+			log.Fatal(err.Error())
 		}
 	}
 
@@ -77,7 +80,12 @@ func groupByType(commands []models.Command) map[models.CommandType][]CommandWith
 	for _, command := range commands {
 		uri, err := url.Parse(command.Query)
 		if err != nil {
-			return groupedCommands
+			groupedCommands[command.Type] = append(groupedCommands[command.Type], CommandWithArgs{
+				Command: command,
+				QueryHostname: command.Query,
+				ArgType: Any,
+			})
+			continue
 		}
 		commandWithArgs := CommandWithArgs{
 			Command: command,

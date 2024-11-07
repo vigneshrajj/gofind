@@ -3,11 +3,12 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/vigneshrajj/gofind/internal/database"
 	"github.com/vigneshrajj/gofind/internal/templates"
 	"github.com/vigneshrajj/gofind/models"
-	"net/http"
-	"strings"
 
 	"gorm.io/gorm"
 )
