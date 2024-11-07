@@ -27,7 +27,7 @@ services:
     ports:
       - 3005:3005
     volumes:
-      - ./db:/app/db
+      - ./db:/db
     environment:
       - ENABLE_ADDITIONAL_COMMANDS=true
     restart: unless-stopped
