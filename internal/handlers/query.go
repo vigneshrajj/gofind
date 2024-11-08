@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -31,23 +30,43 @@ func replaceKeyWithValue(input string, choice string) (string, error) {
 	re := regexp.MustCompile(`{([^}]*)}`)
 	matches := re.FindStringSubmatch(input)
 
+	if len(matches) < 2 {
+		return input, nil
+	}
 	content := matches[1]
 	keyValuePairs := strings.Split(content, ",")
 
 	kvMap := make(map[string]string)
 	for _, pair := range keyValuePairs {
 		parts := strings.SplitN(pair, ":", 2)
-		if len(parts) == 2 {
-			kvMap[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+		if len(parts) != 2 {
+			continue
 		}
+		key := strings.Split(parts[0], "$(default)")[0]
+		kvMap[strings.TrimSpace(key)] = strings.TrimSpace(parts[1])
 	}
 
 	if value, found := kvMap[choice]; found {
 		return strings.Replace(input, matches[0], value, 1), nil
 	} else {
-		return input, errors.New("Invalid Argument Provided.")
+		return input, nil
 	}
 }
+
+func replaceKeyWithDefaults(input string) string {
+	re := regexp.MustCompile(`\{[^{}]*\$\(\bdefault\b\):([^,{}]*)[^{}]*\}`)
+
+	result := re.ReplaceAllStringFunc(input, func(match string) string {
+        parts := re.FindStringSubmatch(match)
+        if len(parts) > 1 {
+            return parts[1] 
+        }
+        return match
+    })
+
+	return result
+}
+
 
 func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, db *gorm.DB) {
 	alias := data[0]
@@ -78,15 +97,15 @@ func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, 
 	}
 
 	if isKeyValueArg(query) {
-		argsCount := strings.Count(query, "{")
+		argsCount := strings.Count(query, "{") - strings.Count(query, "$(default)")
 		inputArgsCount := len(data) - 1
-		if argsCount != inputArgsCount {
+		if argsCount > inputArgsCount {
 			w.WriteHeader(http.StatusBadRequest)
 			templates.MessageTemplate(w, "Invalid arguments provided")
 			return
 		}
 
-		for i := 1; i < len(data); i++ {
+		for i := 1; i < len(data); {
 			var err error
 			query, err = replaceKeyWithValue(query, data[i])
 			if err != nil {
@@ -94,7 +113,15 @@ func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, 
 				templates.MessageTemplate(w, err.Error())
 				return
 			}
+			i++
 		}
+		query = replaceKeyWithDefaults(query)
+		if strings.Contains(query, "{") {
+			w.WriteHeader(http.StatusBadRequest)
+			templates.MessageTemplate(w, "Couldn't find all required arguments.")
+			return
+		}
+
 		http.Redirect(w, r, query, http.StatusFound)
 		return
 	}

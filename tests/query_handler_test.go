@@ -1,11 +1,12 @@
 package tests
 
 import (
-	"github.com/vigneshrajj/gofind/internal/database"
-	"github.com/vigneshrajj/gofind/internal/handlers"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/vigneshrajj/gofind/internal/database"
+	"github.com/vigneshrajj/gofind/internal/handlers"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/vigneshrajj/gofind/models"
@@ -391,8 +392,9 @@ func TestRedirectWithExtraKeyValueArg(t *testing.T) {
 	query = "alias key2 key3"
 	handlers.HandleQuery(w, r, query, db)
 	resp := w.Result()
-	if resp.StatusCode != 400 {
-		t.Fatalf("Expected status code 400, but got %v", resp.StatusCode)
+	t.Log(resp.Header.Get("Location"))
+	if resp.StatusCode != 302 {
+		t.Fatalf("Expected status code 302, but got %v", resp.StatusCode)
 	}
 }
 

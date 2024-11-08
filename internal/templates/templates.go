@@ -64,7 +64,8 @@ func ExtractKeyValArgs(query string) map[string]string {
 		for _, pair := range pairs {
 			kv := strings.Split(pair, ":")
 			if len(kv) == 2 {
-				result[kv[0]] = kv[1]
+				key := strings.Split(kv[0], "$(default)")[0]
+				result[key] = kv[1]
 			}
 		}
 	}
