@@ -9,6 +9,11 @@ GoFind supercharges your browser address bar by providing short predictable alia
 - Stores all your data locally in an sqlite database allowing easy backup for your data
 - Lightweight and fast since it is built with technologies like Go and HTMX
 
+## Example usages
+- Create a command by typing this into your address bar: `#a c https://chatgpt.com/?q=%s` and then invoke ChatGPT from the address bar by typing **c** followed by your query: `c how to build a spaceship`
+- Create a command by typing this into your address bar: `#a gm https://mail.google.com/mail/u/{work:0,personal$(default):1}/#inbox` and directly open a specific email's inbox by typing a name `gm personal` or `gm work` or just `gm` since the default value is set to open `personal` inbox
+- You can even open a specific label in Gmail by setting it as the argument: `#a gml https://mail.google.com/mail/u/{work:0/#inbox,otp:0/#label/otps,nl:0/#label/newsletters,personal:1/#inbox}` then you can type `gml newsletter` to check the emails labelled newsletters.
+
 ## Requirements
 - Docker or Docker Compose
 
@@ -94,8 +99,11 @@ docker run -d \
     - Use alias g followed by 2 arguments and each of them will be placed at the respective places for searching
     - `g abc efg` would become `https://google.com/search?q=abc&q2=efg`
 - **Key Value arguments** - `#a gm https://mail.google.com/mail/u/{r:0,vr:1}/#inbox`
-    - Use alias gm followed by specific key from the keys provided in the command (keys from above example are r, vr) and it will be replaced by the corresponding value (values from above example are 0, 1)
-    - `gm vr` would become `https://mail.google.com/mail/u/1/#inbox`
+    - Use alias gm followed by specific key from the keys provided in the command (keys from above example are r, vr) and it will be replaced by the corresponding value (values from above example are 0, 1):
+        - `gm vr` would become `https://mail.google.com/mail/u/1/#inbox`
+    - Mark a value as default value if no arguments are passed:
+        - `#a gm https://mail.google.com/mail/u/{r$(default):0,vr:1}/#inbox` - Creating a command with `$(default)` before the colon specifies it as the default
+        - For the above command, `gm` would become `https://mail.google.com/mail/u/0/#inbox`
 
 ##### Additional Utilities
 
