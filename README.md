@@ -13,6 +13,7 @@ GoFind supercharges your browser address bar by providing short predictable alia
 - Create a command by typing this into your address bar: `#a c https://chatgpt.com/?q=%s` and then invoke ChatGPT from the address bar by typing **c** followed by your query: `c how to build a spaceship`
 - Create a command by typing this into your address bar: `#a gm https://mail.google.com/mail/u/{work:0,personal$(default):1}/#inbox` and directly open a specific email's inbox by typing a name `gm personal` or `gm work` or just `gm` since the default value is set to open `personal` inbox
 - You can even open a specific label in Gmail by setting it as the argument: `#a gml https://mail.google.com/mail/u/{work:0/#inbox,otp:0/#label/otps,nl:0/#label/newsletters,personal:1/#inbox}` then you can type `gml newsletter` to check the emails labelled newsletters.
+- You can open a file that can be viewed in the browser like pdf, txt, etc. by opening the file in the browser then prefixing it with `#a <alias> file://...`, then you can use the alias to directly open the file in the browser
 
 ## Requirements
 - Docker or Docker Compose
@@ -33,6 +34,8 @@ services:
       - 3005:3005
     volumes:
       - ./db:/db
+      # optionally, files located inside the mentioned folder can be opened directly using a command
+      - ./path/to/local/files:/files
     environment:
       - ENABLE_ADDITIONAL_COMMANDS=true
     restart: unless-stopped
@@ -84,6 +87,7 @@ docker run -d \
     - Example: `#a g google.com/search?q={1}&q2={2}`
     - Example: `#a gm https://mail.google.com/mail/u/{r:0,vr:1}/#inbox`
     - Example: `#a d https://test.com Some description for the query`
+    - Example: `#a file /home/path/to/file.pdf Open a file directly using an alias`
 - `#d <alias>` - Deletes an existing command
     - Example: `#d gm`
 - `<alias> <argument1> <argument2> ...` - Searches the website denoted by the alias along with the provided arguments

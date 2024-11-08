@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	"github.com/vigneshrajj/gofind/internal/database"
@@ -13,7 +14,16 @@ import (
 	"gorm.io/gorm"
 )
 
-func HandleAddCommand(w http.ResponseWriter, data []string, db *gorm.DB) {
+func convertToFileURL(r *http.Request, filePath string) string {
+	protocol := "http"
+	if r.TLS != nil {
+		protocol = "https"
+	}
+
+	return fmt.Sprintf("%s://%s/files/%s", protocol, r.Host, filepath.Base(filePath))
+}
+
+func HandleAddCommand(w http.ResponseWriter, r *http.Request, data []string, db *gorm.DB) {
 	if len(data) < 3 {
 		w.WriteHeader(http.StatusBadRequest)
 		templates.MessageTemplate(w, "Invalid number of arguments provided. Add command usage:\n#a <alias> <url-with-args> <description(optional)>")
@@ -27,6 +37,11 @@ func HandleAddCommand(w http.ResponseWriter, data []string, db *gorm.DB) {
 	}
 	if len(data) > 3 {
 		command.Description = sql.NullString{String: strings.Join(data[3:], " "), Valid: true}
+	}
+
+	isFile := strings.HasPrefix(command.Query, "file://")
+	if isFile {
+		command.Query = convertToFileURL(r, command.Query)
 	}
 
 	err := database.CreateCommand(db, command)

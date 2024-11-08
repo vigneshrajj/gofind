@@ -85,8 +85,9 @@ func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, 
 
 	query := command.Query
 
-	startsWithHttp := strings.HasPrefix(query, "http://") || strings.HasPrefix(query, "https://")
-	if !startsWithHttp {
+	startsWithValidProtocol := strings.HasPrefix(query, "http://") || strings.HasPrefix(query, "https://")
+
+	if !startsWithValidProtocol {
 		query = "https://" + query
 	}
 
@@ -152,7 +153,7 @@ func HandleQuery(w http.ResponseWriter, r *http.Request, query string, db *gorm.
 	data := strings.Split(query, " ")
 	switch data[0] {
 	case "#a":
-		HandleAddCommand(w, data, db)
+		HandleAddCommand(w, r, data, db)
 	case "#d":
 		HandleDeleteCommand(w, data, db)
 	case "#l":
