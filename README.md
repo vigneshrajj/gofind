@@ -15,8 +15,13 @@ GoFind supercharges your browser address bar by providing short predictable alia
 - You can even open a specific label in Gmail by setting it as the argument: `#a gml https://mail.google.com/mail/u/{work:0/#inbox,otp:0/#label/otps,nl:0/#label/newsletters,personal:1/#inbox}` then you can type `gml newsletter` to check the emails labelled newsletters.
 - You can open any file that can be viewed in a browser like pdf, txt, etc. by opening the file in the browser and then prefixing it with `#a <alias>`, like `#a f file://home/path/to/file.pdf`, then you can use the alias to directly open the file in the browser
 - Run multiple commands at once in multiple tabs by separating the commands with `;;`. Example, `g search something in google;;#a alias https://test.com add an alias;;gm work` would run all the commands in 3 different tabs
+- And much more:
+    - `#a tiny https://tinyurl.com/api-create.php?url={1}` - Use URL shortener service by visiting a website and prefixing the URL with `tiny https://...` to generate a shortened URL
+    - `#a insta https://www.instapaper.com/text?u={1}` - View current page in instapaper reader by prefixing the url with `insta https://...`
+    - `#a pkt https://getpocket.com/save?url={1}` - Save current page to Pocket by prefixing the url with `pkt https://...`
 
 ## Requirements
+
 - Docker or Docker Compose
 
 ## Getting Started
