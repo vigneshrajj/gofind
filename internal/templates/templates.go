@@ -169,3 +169,15 @@ func Sha256Template(w http.ResponseWriter, hashed string) {
 	tmpl := template.Must(template.ParseFiles("static/templates/sha256.html"))
 	tmpl.Execute(w, data)
 }
+
+type MultiQueryPageData struct {
+	Queries []string
+}
+
+func MultiQueryTemplate(w http.ResponseWriter, queries []string) {
+	data := MultiQueryPageData{
+		Queries: queries,
+	}
+	tmpl := template.Must(template.ParseFiles("static/templates/multi_query.html"))
+	tmpl.Execute(w, data)
+}

@@ -150,6 +150,17 @@ func HandleQuery(w http.ResponseWriter, r *http.Request, query string, db *gorm.
 		templates.MessageTemplate(w, "Query cannot be empty")
 		return
 	}
+
+	multiQuery := strings.Split(query, ";;")
+	if len(multiQuery) > 1 {
+		GetHostFromRequest(r)
+		for idx := range multiQuery {
+			multiQuery[idx] = fmt.Sprintf("%s/search?query=%s", GetHostFromRequest(r), url.QueryEscape(multiQuery[idx]))
+		}
+		templates.MultiQueryTemplate(w, multiQuery)
+		return
+	}
+
 	data := strings.Split(query, " ")
 	switch data[0] {
 	case "#a":

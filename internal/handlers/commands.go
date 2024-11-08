@@ -14,13 +14,16 @@ import (
 	"gorm.io/gorm"
 )
 
-func convertToFileURL(r *http.Request, filePath string) string {
+func GetHostFromRequest(r *http.Request) string {
 	protocol := "http"
 	if r.TLS != nil {
 		protocol = "https"
 	}
+	return fmt.Sprintf("%s://%s", protocol, r.Host)
+}
 
-	return fmt.Sprintf("%s://%s/files/%s", protocol, r.Host, filepath.Base(filePath))
+func convertToFileURL(r *http.Request, filePath string) string {
+	return fmt.Sprintf("%s/files/%s", GetHostFromRequest(r), filepath.Base(filePath))
 }
 
 func HandleAddCommand(w http.ResponseWriter, r *http.Request, data []string, db *gorm.DB) {

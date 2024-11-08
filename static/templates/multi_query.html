@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>GoFind</title>
+		<script type="text/javascript">
+			function goto(queries) {
+				for (let i = 0; i < queries.length; i++) {
+					const query = queries[i];
+					if (i == 0) {
+						window.location.href = query;
+					} else {
+						window.open(query, '_blank');
+					}
+				}
+			}
+			goto({{.Queries}});
+		</script>
+	</head>
+</html>
+
