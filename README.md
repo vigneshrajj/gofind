@@ -13,7 +13,8 @@ GoFind supercharges your browser address bar by providing short predictable alia
 - Create a command by typing this into your address bar: `#a c https://chatgpt.com/?q=%s` and then invoke ChatGPT from the address bar by typing **c** followed by your query: `c how to build a spaceship`
 - Create a command by typing this into your address bar: `#a gm https://mail.google.com/mail/u/{work:0,personal$(default):1}/#inbox` and directly open a specific email's inbox by typing a name `gm personal` or `gm work` or just `gm` since the default value is set to open `personal` inbox
 - You can even open a specific label in Gmail by setting it as the argument: `#a gml https://mail.google.com/mail/u/{work:0/#inbox,otp:0/#label/otps,nl:0/#label/newsletters,personal:1/#inbox}` then you can type `gml newsletter` to check the emails labelled newsletters.
-- You can open a file that can be viewed in the browser like pdf, txt, etc. by opening the file in the browser then prefixing it with `#a <alias> file://...`, then you can use the alias to directly open the file in the browser
+- You can open any file that can be viewed in a browser like pdf, txt, etc. by opening the file in the browser and then prefixing it with `#a <alias>`, like `#a f file://home/path/to/file.pdf`, then you can use the alias to directly open the file in the browser
+- Run multiple commands at once in multiple tabs by separating the commands with `;;`. Example, `g search something in google;;#a alias https://test.com add an alias;;gm work` would run all the commands in 3 different tabs
 
 ## Requirements
 - Docker or Docker Compose
