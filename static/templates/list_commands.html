@@ -4,79 +4,113 @@
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>GoFind - List Commands</title>
-		<link href="/static/styles.css" rel="stylesheet">
+		<link href="/static/css/styles.css" rel="stylesheet">
 		<script src="https://unpkg.com/htmx.org@2.0.3" integrity="sha384-0895/pl2MU10Hqc6jd4RvrthNlDiE9U1tWmX7WRESftEDRosgxNsQG/Ze9YMRzHq" crossorigin="anonymous"></script>
 	</head>
 	<body>
-		<h1>List of Available Commands</h1>
+		<h1 class="text-4xl text-center my-10 font-bold">GoFind</h1>
 
-		<span>
-			<p id="msg"></p>
-		</span>
+<div class="max-w-[20vw] mx-auto my-10">
+  <div class="relative mt-2 flex items-center">
+    <input 
+		name="search_query"
+		id="search_query"
+		hx-trigger="keyup changed delay:500ms"
+		hx-get="/filter_commands"
+		hx-target="#list"
+		autofocus placeholder="Quick Search" type="text" name="search" id="search" class="block w-full rounded-md border-0 py-1.5 pr-14 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-green-600 sm:text-sm/6">
+    <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
+      <kbd class="inline-flex items-center rounded border border-gray-200 px-1 font-sans text-xs text-gray-400">⌘K</kbd>
+    </div>
+  </div>
+</div>
 
-		{{ range $Type, $Commands := .GroupedCommands }}
-		<h3 id="command-type">{{$Type}} Commands</h3>
-		<table>
-			<tr>
-				<th>Alias</th>
-				{{if eq $Type "search"}}
-					<th>Query</th>
-					<th>Arguments</th>
-				{{end}}
-				<th>Description</th>
-				<th>Default</th>
-			</tr>
-			{{range $Commands}}
-			<tr>
-				<td>{{.Alias}}</td>
 
-				{{if eq $Type "search"}}
-					<td class="query">
-						<span class="hostname">{{.QueryHostname}}</span>
-						<span class="query-full">{{.Query}}</span>
-					</td>
-					<td class="args">
-						{{if eq .ArgType "num"}}
-							{{range .ArgsNum}}
-								<span class="arg num">{{"{"}}{{.}}{{"}"}}</span>
-							{{end}}
-						{{else if eq .ArgType "keyval"}}
-							{{range $Key, $Val := .ArgsKeyVal}}
-					<span class="arg keyval">{{$Key}}: {{$Val}}</span>
-							{{end}}
-						{{else}}
-							<span class="arg any">%s</span>
-						{{end}}
-					</td>
-				{{end}}
 
-				<td class="description">{{.Description.String}}</td>
+		<main id="list">
+			{{ range $Type, $Commands := .GroupedCommands }}
+			<h3 class="text-center capitalize text-bold text-2xl mb-2 mt-4">{{$Type}} Commands</h3>
 
-				{{if .IsDefault}}
-				<td>
-					<input type="radio" name="default" value="{{.Alias}}"
-						hx-get="/set-default-command"
-						hx-trigger="change"
-						hx-target="#msg" 
-						hx-swap="textContent"
-						checked
-					>
-					<span class="graphical-radio"></span>
-				</td>
-				{{else}}
-				<td>
-					<input type="radio" name="default" value="{{.Alias}}"
-						hx-get="/set-default-command"
-						hx-trigger="change"
-						hx-target="#msg" 
-						hx-swap="textContent"
-					>
-					<span class="graphical-radio"></span>
-				</td>
-				{{end}}
-			</tr>
+			<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+				<div class="px-4 sm:px-6 lg:px-8 border border-gray-300 rounded-md">
+					<div class="flow-root">
+						<div class="-mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+							<div class="inline-block min-w-full py-2 align-middle">
+								<table class="min-w-full border-separate border-spacing-0 table-fixed">
+									<thead>
+										<tr>
+											<th scope="col" class="rounded-tl-md sticky top-0 z-10 border-b border-gray-300 bg-white bg-opacity-75 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter table-cell w-10">Default</th>
+											<th scope="col" class="sticky top-0 z-10 border-b border-gray-300 bg-white bg-opacity-75 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter sm:pl-6 lg:pl-8">Alias</th>
+											{{if eq $Type "search"}}
+											<th scope="col" class="sticky top-0 z-10 border-b border-gray-300 bg-white bg-opacity-75 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter">Query</th>
+											<th scope="col" class="sticky top-0 z-10 border-b border-gray-300 bg-white bg-opacity-75 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter">Arguments</th>
+											{{end}}
+											<th scope="col" class="rounded-tr-md sticky top-0 z-10 border-b border-gray-300 bg-white bg-opacity-75 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter table-cell">Description</th>
+										</tr>
+									</thead>
+									<tbody id="tbody">
+										{{range $idx, $Command := $Commands}}
+										<tr
+											class="hover:bg-green-50">
+											<td class="relative whitespace-nowrap border-b border-gray-200 py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-8 lg:pr-8">
+												<input type="radio" name="default" value="{{$Command.Alias}}"
+													hx-get="/set-default-command"
+													hx-trigger="change"
+													hx-target="#notification" 
+													hx-swap="innerHtml"
+													class="h-4 w-4 border-gray-300 text-green-600 focus:ring-green-600 active:ring-2 active:ring-green-600 active:ring-offset-2"
+													{{if $Command.IsDefault}}
+													checked
+													{{end}}
+												>
+											</td>
+											<td class="whitespace-nowrap border-b border-gray-200 py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 lg:pl-8">{{$Command.Alias}}</td>
+											{{if eq $Type "search"}}
+											<td class="relative whitespace-nowrap border-b border-gray-200 px-3 py-4 text-sm text-gray-500 table-cell group">
+												{{$Command.QueryHostname}}
+												<div class="absolute bottom-[calc(80%)] left-0 z-10 inline-block px-3 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg shadow-sm tooltip invisible group-hover:visible">
+													{{$Command.Query}}
+													<div class="tooltip-arrow" data-popper-arrow></div>
+												</div>
+											</td>
+											<td class="border-b border-gray-200 px-3 py-4 text-sm text-gray-500 table-cell">
+												{{if eq $Command.ArgType "num"}}
+												{{range $Command.ArgsNum}}
+												<span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 my-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">{{"{"}}{{.}}{{"}"}}</span>
+												{{end}}
+												{{else if eq $Command.ArgType "keyval"}}
+												{{range $Key, $Val := $Command.ArgsKeyVal}}
+												<span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 my-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">{{$Key}}: {{$Val}}</span>
+												{{end}}
+												{{else}}
+												<span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 my-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">%s</span>
+												{{end}}
+											</td>
+											{{end}}
+											<td class="whitespace-nowrap border-b border-gray-200 px-3 py-4 text-sm text-gray-500">{{$Command.Description.String}}</td>
+										</tr>
+										{{end}}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 			{{end}}
-		</table>
-		{{end}}
+		</main>
+
+		<!-- Notification -->
+		<div id="notification" aria-live="assertive" class="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6">
+		</div>
+
+		<script type="text/javascript">
+			document.addEventListener('keydown', function(event) {
+				if (event.ctrlKey && event.key === 'k') {
+					event.preventDefault();
+					document.querySelector('#search_query').focus();
+				}
+			});
+		</script>
 	</body>
 </html>

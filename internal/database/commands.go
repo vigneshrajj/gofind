@@ -31,6 +31,29 @@ func ListCommands(db *gorm.DB) []models.Command {
 	return commands
 }
 
+func FilteredListCommands(db *gorm.DB, query string, pageSize int, offset int) (*[]models.Command, error) {
+    var commands []models.Command
+
+    switch {
+    case pageSize > 100:
+        pageSize = 100
+    case pageSize <= 0:
+        pageSize = 10
+    }
+
+    if query != "" {
+        db = db.Where("alias LIKE ? OR query LIKE ? OR description LIKE ?", "%"+query+"%", "%"+query+"%", "%"+query+"%")
+    }
+
+    // db = db.Offset(offset).Limit(pageSize).Order("type ASC")
+
+    if err := db.Find(&commands).Error; err != nil {
+        return nil, err
+    }
+
+    return &commands, nil
+}
+
 func SearchCommand(db *gorm.DB, alias string, partialMatch bool) models.Command {
 	var command models.Command
 	if partialMatch {

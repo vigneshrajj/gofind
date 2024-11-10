@@ -20,6 +20,11 @@ func HandleRoutes(db *gorm.DB) {
 		query := r.URL.Query().Get("query")
 		handlers.HandleQuery(w, r, query, db)
 	})
+
+	http.HandleFunc("/filter_commands", func(w http.ResponseWriter, r *http.Request) {
+		handlers.HandleFilteredListCommands(w, r, db)
+	})
+
 	http.HandleFunc("/set-default-command", func(w http.ResponseWriter, r *http.Request) {
 		handlers.ChangeDefaultCommand(w, r, db)
 	})

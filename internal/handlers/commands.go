@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/vigneshrajj/gofind/internal/database"
@@ -66,6 +67,38 @@ func HandleListCommands(w http.ResponseWriter, data []string, db *gorm.DB) {
 	templates.ListCommandsTemplate(w, commands)
 }
 
+func HandleFilteredListCommands(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+	page_size := 10
+	offset := 0
+	searchQuery := r.URL.Query().Get("search_query")
+	if r.URL.Query().Get("page_size") != "" {
+		var err error
+		page_size, err = strconv.Atoi(r.URL.Query().Get("page_size"))
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			templates.MessageTemplate(w, "Invalid page_size provided.")
+			return
+		}
+	}
+	if r.URL.Query().Get("offset") != "" {
+		var err error
+		offset, err = strconv.Atoi(r.URL.Query().Get("offset"))
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			templates.MessageTemplate(w, "Invalid offset provided.")
+			return
+		}
+	}
+
+	commands, err := database.FilteredListCommands(db, searchQuery, page_size, offset)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		templates.MessageTemplate(w, "Could not fetch commands." + err.Error())
+		return
+	}
+	templates.FilteredListCommandsTemplate(w, *commands)
+}
+
 func ChangeDefaultCommand(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	alias := r.URL.Query().Get("default")
 	response := "Default Command has been changed successfully to " + alias
@@ -74,7 +107,7 @@ func ChangeDefaultCommand(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		w.WriteHeader(http.StatusBadRequest)
 		response = "Error setting default command."
 	}
-	w.Write([]byte(response))
+	templates.NotificationTemplate(w, response)
 }
 
 func HandleDeleteCommand(w http.ResponseWriter, data []string, db *gorm.DB) {

@@ -73,6 +73,25 @@ func ExtractKeyValArgs(query string) map[string]string {
 	return result
 }
 
+
+func extractHostnameFromQuery(query string) string {
+	startsWithValidProtocol := strings.HasPrefix(query, "http://") || strings.HasPrefix(query, "https://")
+
+	if !startsWithValidProtocol {
+		query = "https://" + query
+	}
+	// regexp for getting string between second / and third / or end of line
+	re := regexp.MustCompile(`\/([^\/]+)\/?`)
+	matches := re.FindAllStringSubmatch(query, -1)
+
+	if len(matches) < 1 || len(matches[0]) < 2 {
+		return ""
+	}
+
+	return matches[0][1]
+}
+
+	
 		
 
 func groupByType(commands []models.Command) map[models.CommandType][]CommandWithArgs {
@@ -101,18 +120,40 @@ func groupByType(commands []models.Command) map[models.CommandType][]CommandWith
 			commandWithArgs.ArgType = Any
 		}
 
-		commandWithArgs.QueryHostname = uri.Hostname()
+		hostname := uri.Hostname()
+		commandWithArgs.QueryHostname = hostname
+
+		if hostname == "" {
+			commandWithArgs.QueryHostname = extractHostnameFromQuery(command.Query)
+		}
 		groupedCommands[command.Type] = append(groupedCommands[command.Type], commandWithArgs)
 	}
 
 	return groupedCommands
 }
 
+
+var helpers template.FuncMap = map[string]interface{}{
+	"isLast": func(index int, len int) bool {
+		return index+1 == len
+	},
+}
+
 func ListCommandsTemplate(w http.ResponseWriter, commands []models.Command) {
 	data := ListCommandsPageData{
 		GroupedCommands: groupByType(commands),
 	}
-	tmpl := template.Must(template.ParseFiles("static/templates/list_commands.html"))
+	tmpl := template.Must(template.New("list_commands.html").Funcs(helpers).ParseFiles("static/templates/list_commands.html", "static/templates/filtered_commands_list.html"))
+	tmpl.Execute(w, data)
+}
+
+func FilteredListCommandsTemplate(w http.ResponseWriter, commands []models.Command) {
+	data := ListCommandsPageData{
+		GroupedCommands: groupByType(commands),
+	}
+
+
+	tmpl := template.Must(template.New("filtered_commands_list.html").Funcs(helpers).ParseFiles("static/templates/filtered_commands_list.html"))
 	tmpl.Execute(w, data)
 }
 
@@ -179,5 +220,17 @@ func MultiQueryTemplate(w http.ResponseWriter, queries []string) {
 		Queries: queries,
 	}
 	tmpl := template.Must(template.ParseFiles("static/templates/multi_query.html"))
+	tmpl.Execute(w, data)
+}
+
+type NotificationData struct {
+	Title string
+}
+
+func NotificationTemplate(w http.ResponseWriter, title string) {
+	data := NotificationData{
+		Title: title,
+	}
+	tmpl := template.Must(template.ParseFiles("static/templates/notification.html"))
 	tmpl.Execute(w, data)
 }
