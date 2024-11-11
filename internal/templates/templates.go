@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/vigneshrajj/gofind/config"
 	"github.com/vigneshrajj/gofind/models"
 )
 
@@ -18,6 +19,7 @@ const (
 	KeyVal ArgType = "keyval"
 	Num ArgType = "num"
 	Any ArgType = "any"
+	None ArgType = "none"
 )
 
 type CommandWithArgs struct {
@@ -30,7 +32,8 @@ type CommandWithArgs struct {
 }
 
 type ListCommandsPageData struct {
-	GroupedCommands map[models.CommandType][]CommandWithArgs
+	Type 	 models.CommandType
+	EnableUtils bool
 }
 
 func ExtractNumArgs(query string) []int {
@@ -92,18 +95,15 @@ func extractHostnameFromQuery(query string) string {
 }
 
 	
-		
-
-func groupByType(commands []models.Command) map[models.CommandType][]CommandWithArgs {
-	groupedCommands := make(map[models.CommandType][]CommandWithArgs)
-
+func addArgsAndHostToCommands(commands []models.Command) []CommandWithArgs {
+	newCommands := make([]CommandWithArgs, 0, len(commands))
 	for _, command := range commands {
 		uri, err := url.Parse(command.Query)
 		if err != nil {
-			groupedCommands[command.Type] = append(groupedCommands[command.Type], CommandWithArgs{
+			newCommands = append(newCommands, CommandWithArgs{
 				Command: command,
 				QueryHostname: command.Query,
-				ArgType: Any,
+				ArgType: None,
 			})
 			continue
 		}
@@ -112,12 +112,16 @@ func groupByType(commands []models.Command) map[models.CommandType][]CommandWith
 			ArgsNum: ExtractNumArgs(command.Query),
 			ArgsKeyVal: ExtractKeyValArgs(command.Query),
 		}
+
+		isAnyArg := strings.Count(commandWithArgs.Query, "%s") == 1
 		if len(commandWithArgs.ArgsKeyVal) > 0 {
 			commandWithArgs.ArgType = KeyVal
 		} else if (len(commandWithArgs.ArgsNum) > 0) {
 			commandWithArgs.ArgType = Num
-		} else {
+		} else if isAnyArg {
 			commandWithArgs.ArgType = Any
+		} else {
+			commandWithArgs.ArgType = None
 		}
 
 		hostname := uri.Hostname()
@@ -126,10 +130,10 @@ func groupByType(commands []models.Command) map[models.CommandType][]CommandWith
 		if hostname == "" {
 			commandWithArgs.QueryHostname = extractHostnameFromQuery(command.Query)
 		}
-		groupedCommands[command.Type] = append(groupedCommands[command.Type], commandWithArgs)
+		newCommands = append(newCommands, commandWithArgs)
 	}
 
-	return groupedCommands
+	return newCommands
 }
 
 
@@ -139,19 +143,25 @@ var helpers template.FuncMap = map[string]interface{}{
 	},
 }
 
-func ListCommandsTemplate(w http.ResponseWriter, commands []models.Command) {
+func ListCommandsTemplate(w http.ResponseWriter, command_type models.CommandType) {
 	data := ListCommandsPageData{
-		GroupedCommands: groupByType(commands),
+		Type: command_type,
+		EnableUtils: config.ItToolsUrl != "",
 	}
-	tmpl := template.Must(template.New("list_commands.html").Funcs(helpers).ParseFiles("static/templates/list_commands.html", "static/templates/filtered_commands_list.html"))
+	tmpl := template.Must(template.New("list_commands.html").Funcs(helpers).ParseFiles("static/templates/list_commands.html", "static/templates/filtered_commands_list.html", "static/templates/command_tabs.html"))
 	tmpl.Execute(w, data)
 }
 
-func FilteredListCommandsTemplate(w http.ResponseWriter, commands []models.Command) {
-	data := ListCommandsPageData{
-		GroupedCommands: groupByType(commands),
-	}
+type FilteredCommandsPageData struct {
+	Offset int
+	Commands []CommandWithArgs
+}
 
+func FilteredListCommandsTemplate(w http.ResponseWriter, commands []models.Command, offset int) {
+	data := FilteredCommandsPageData{
+		Offset: offset + len(commands),
+		Commands: addArgsAndHostToCommands(commands),
+	}
 
 	tmpl := template.Must(template.New("filtered_commands_list.html").Funcs(helpers).ParseFiles("static/templates/filtered_commands_list.html"))
 	tmpl.Execute(w, data)

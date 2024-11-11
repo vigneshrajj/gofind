@@ -41,6 +41,9 @@ func StartServer(DbPath string, Port string) error {
 	}
 
 	database.EnsureDefaultCommandsExist(db)
+	if config.ItToolsUrl != "" {
+		database.EnsureUtilCommandsExist(db)
+	}
 
 	if config.EnableAdditionalCommands {
 		database.EnsureAdditionalCommandsExist(db)

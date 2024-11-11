@@ -63,14 +63,15 @@ func HandleListCommands(w http.ResponseWriter, data []string, db *gorm.DB) {
 		templates.MessageTemplate(w, "Invalid number of arguments provided. List command usage: #l")
 		return
 	}
-	commands := database.ListCommands(db)
-	templates.ListCommandsTemplate(w, commands)
+	templates.ListCommandsTemplate(w, models.SearchCommand)
 }
 
 func HandleFilteredListCommands(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	page_size := 10
 	offset := 0
 	searchQuery := r.URL.Query().Get("search_query")
+	command_type := r.URL.Query().Get("command_type")
+
 	if r.URL.Query().Get("page_size") != "" {
 		var err error
 		page_size, err = strconv.Atoi(r.URL.Query().Get("page_size"))
@@ -90,13 +91,14 @@ func HandleFilteredListCommands(w http.ResponseWriter, r *http.Request, db *gorm
 		}
 	}
 
-	commands, err := database.FilteredListCommands(db, searchQuery, page_size, offset)
+	commands, err := database.FilteredListCommands(db, searchQuery, page_size, offset, command_type)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		templates.MessageTemplate(w, "Could not fetch commands." + err.Error())
 		return
 	}
-	templates.FilteredListCommandsTemplate(w, *commands)
+
+	templates.FilteredListCommandsTemplate(w, *commands, offset)
 }
 
 func ChangeDefaultCommand(w http.ResponseWriter, r *http.Request, db *gorm.DB) {

@@ -1,0 +1,35 @@
+<div class="mx-auto my-4 max-w-7xl px-4 sm:px-6 lg:px-8">
+	<div>
+		<div class="sm:hidden">
+			<label for="tabs" class="sr-only">Select a tab</label>
+			<select id="tabs" name="tabs" class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
+				<option selected>Search Commands</option>
+				<option>Utilities</option>
+			</select>
+		</div>
+		<div class="hidden sm:block">
+			<div class="border-b border-gray-200">
+				<nav class="-mb-px flex space-x-8" aria-label="Tabs">
+					<!-- Current: "border-green-500 text-green-600", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" -->
+					<input 
+						hx-trigger="change"
+						hx-get="/filter_commands"
+						hx-include="[name='search_query']"
+						hx-target="#list"
+						type="radio" name="command_type" id="search_command_type" value="search" class="hidden peer/search" checked>
+					<label for="search_command_type" class="whitespace-nowrap border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 peer-checked/search:border-green-500 peer-checked/search:text-green-600">Search Commands</label>
+
+					{{if .EnableUtils}}
+					<input 
+						hx-trigger="change"
+						hx-get="/filter_commands"
+						hx-include="[name='search_query']"
+						hx-target="#list"
+						type="radio" name="command_type" id="util_command_type" value="util" class="hidden peer/util">
+					<label for="util_command_type" class="whitespace-nowrap border-b-2 border-transparent px-1 py-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 peer-checked/util:border-green-500 peer-checked/util:text-green-600">Utilities</label>
+					{{end}}
+				</nav>
+			</div>
+		</div>
+	</div>
+</div>

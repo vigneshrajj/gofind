@@ -78,11 +78,6 @@ func HandleRedirectQuery(w http.ResponseWriter, r *http.Request, data []string, 
 		data = append([]string{command.Alias}, data...)
 	}
 
-	if command.Type == models.UtilCommand {
-		HandleUtilCommand(w, data)
-		return
-	}
-
 	query := command.Query
 
 	startsWithValidProtocol := strings.HasPrefix(query, "http://") || strings.HasPrefix(query, "https://")

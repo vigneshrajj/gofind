@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 
+	"github.com/vigneshrajj/gofind/config"
 	"github.com/vigneshrajj/gofind/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -32,27 +33,6 @@ func EnsureDefaultCommandsExist(db *gorm.DB) {
 			Type:        models.SearchCommand,
 			Description: sql.NullString{String: "Google Search", Valid: true},
 			IsDefault:   true,
-		},
-		{
-			Alias:       "b64",
-			Query:       "",
-			Type:        models.UtilCommand,
-			Description: sql.NullString{String: "Convert To Base 64 string", Valid: true},
-			IsDefault:   false,
-		},
-		{
-			Alias:       "d64",
-			Query:       "",
-			Type:        models.UtilCommand,
-			Description: sql.NullString{String: "Decode Base 64 string", Valid: true},
-			IsDefault:   false,
-		},
-		{
-			Alias:       "sha256",
-			Query:       "",
-			Type:        models.UtilCommand,
-			Description: sql.NullString{String: "Convert To SHA 256 string", Valid: true},
-			IsDefault:   false,
 		},
 	}
 	for _, command := range defaultCommands {
@@ -106,6 +86,105 @@ func EnsureAdditionalCommandsExist(db *gorm.DB) {
 		},
 	}
 	for _, command := range additionalCommands {
+		FirstOrCreateCommand(db, command)
+	}
+}
+
+func EnsureUtilCommandsExist(db *gorm.DB) {
+	utilCommands := []models.Command{
+		{
+			Alias:       "!it",
+			Query:       config.ItToolsUrl,
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "IT Tools", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:       "!bcrypt",
+			Query:       config.ItToolsUrl+"/bcrypt?defaultText={1}",
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "IT Tools: Generate Bcrypt", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:       "!b64",
+			Query:       config.ItToolsUrl+"/base64-string-converter?defaultText={2}&shouldEncode={1}",
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "IT Tools: Base 64 Encoded Decoder", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "!case",
+			Query:       config.ItToolsUrl+"/case-converter?defaultText={1}",
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "IT Tools: Case Converter", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "!color",
+			Query:       config.ItToolsUrl+"/color-converter?defaultText={1}",
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "IT Tools: Color Converter", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "!dt",
+			Query:       config.ItToolsUrl+"/date-converter?defaultText={1}",
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "IT Tools: Date Converter", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "!emoji",
+			Query:       config.ItToolsUrl+"/emoji-picker?defaultText={1}",
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "IT Tools: Search Emoji", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "!hash",
+			Query:       config.ItToolsUrl+"/hash-text?defaultText={1}",
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "IT Tools: Hash Text", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "!http",
+			Query:       config.ItToolsUrl+"/http-status-codes?defaultText={1}",
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "IT Tools: HTTP Status Code Lookup", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "!jwt",
+			Query:       config.ItToolsUrl+"/jwt-parser?defaultText={1}",
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "IT Tools: JWT Parser", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "!qr",
+			Query:       config.ItToolsUrl+"/qr-code-generator?defaultText={1}",
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "IT Tools: QR Code Generator", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "!slug",
+			Query:       config.ItToolsUrl+"/slugify-string?defaultText={1}",
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "IT Tools: Slugify String", Valid: true},
+			IsDefault:   false,
+		},
+		{
+			Alias:			 "!url",
+			Query:       config.ItToolsUrl+"/url-parser?defaultText={1}",
+			Type:        models.UtilCommand,
+			Description: sql.NullString{String: "IT Tools: Parse URL", Valid: true},
+			IsDefault:   false,
+		},
+	}
+	for _, command := range utilCommands {
 		FirstOrCreateCommand(db, command)
 	}
 }
