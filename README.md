@@ -34,17 +34,26 @@ Copy the following into a new `docker-compose.yml` file and make any moditicatio
 
 ```yml
 services:
-  gofind:
-    image: vigneshrajj/gofind:latest
-    ports:
-      - 3005:3005
-    volumes:
-      - ./db:/db
-      # optionally, files located inside the mentioned folder can be opened directly using a command
-      - ./path/to/local/files:/files
-    environment:
-      - ENABLE_ADDITIONAL_COMMANDS=true
-    restart: unless-stopped
+    gofind:
+        image: vigneshrajj/gofind:latest
+        ports:
+            - 3005:3005
+        volumes:
+            - ./db:/db
+            # Optionally, files located inside the mentioned folder can be opened directly using a command
+            - ./path/to/local/files:/files
+        environment:
+            - ENABLE_ADDITIONAL_COMMANDS=false
+            # Optionally, add this url along with the below image for enabling IT Tools
+            - IT_TOOLS_URL=http://localhost:8081
+        restart: unless-stopped
+        # Optionally, enable my custom IT Tools fork for accessing lots of developer tools right from the address bar
+    it-tools:
+        image: 'vigneshrajj/it-tools:latest'
+        ports:
+            - '8081:80'
+        restart: unless-stopped
+        container_name: it-tools
 ```
 
 You can run the application using the following command:
@@ -117,11 +126,13 @@ docker run -d \
 
 ##### Additional Utilities
 
-| Utility          | Alias  | Example               |
-|------------------|--------|-----------------------|
-| SHA 256 Encoding | sha256 | `sha256 abcd`         |
-| Base64 Encoding  | b64    | `b64 abcd`            |
-| Base64 Decoding  | d64    | `d64 <base64 string>` |
+Some examples for additional utilities provided by IT Tools include:
+
+| Utility          | Alias  | Example                      |
+|------------------|--------|------------------------------|
+| Hash Text        | hash   | `!hash abcd`                 |
+| Base64 Encoding  | b64    | `!b64 true abcd`             |
+| Base64 Decoding  | d64    | `!b64 false <base64 string>` |
 
 ## Development
 
