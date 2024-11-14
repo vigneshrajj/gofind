@@ -1,6 +1,8 @@
 # GoFind
 
-GoFind supercharges your browser address bar by providing short predictable aliases for performing any kind of searches. 
+GoFind supercharges your browser address bar by providing short predictable aliases for performing any kind of searches.
+
+Inspired from: [GoLinks](https://git.mills.io/prologic/golinks)
 
 ## Features
 
@@ -10,9 +12,10 @@ GoFind supercharges your browser address bar by providing short predictable alia
 - Lightweight and fast since it is built with technologies like Go and HTMX
 
 ## Example usages
-- Create a command by typing this into your address bar: `#a c https://chatgpt.com/?q=%s` and then invoke ChatGPT from the address bar by typing **c** followed by your query: `c how to build a spaceship`
-- Create a command by typing this into your address bar: `#a gm https://mail.google.com/mail/u/{work:0,personal$(default):1}/#inbox` and directly open a specific email's inbox by typing a name `gm personal` or `gm work` or just `gm` since the default value is set to open `personal` inbox
-- You can even open a specific label in Gmail by setting it as the argument: `#a gml https://mail.google.com/mail/u/{work:0/#inbox,otp:0/#label/otps,nl:0/#label/newsletters,personal:1/#inbox}` then you can type `gml newsletter` to check the emails labelled newsletters.
+- Invoke ChatGPT from the address bar by typing 'c' followed by your query: `c how to build a spaceship`. [Command: `#a c https://chatgpt.com/?q=%s`]
+- Directly open a specific email inbox by typing `gm personal` or `gm work` or just `gm` which would default to open the personal inbox [Command: `#a gm https://mail.google.com/mail/u/{work:0,personal$(default):1}/#inbox`]
+- If you have a long command, you can trigger it by typing part of the command as long as there are no other commands with conflicting name. Eg: Command added this way: `#a commandWithLongAlias https://google.com` can be triggered by typing `com` and pressing enter
+- You can run custom bash scripts from the address bar
 - You can open any file that can be viewed in a browser like pdf, txt, etc. by opening the file in the browser and then prefixing it with `#a <alias>`, like `#a f file://home/path/to/file.pdf`, then you can use the alias to directly open the file in the browser
 - Run multiple commands at once in multiple tabs by separating the commands with `;;`. Example, `g search something in google;;#a alias https://test.com add an alias;;gm work` would run all the commands in 3 different tabs
 - And much more:
@@ -40,14 +43,12 @@ services:
             - 3005:3005
         volumes:
             - ./db:/db
-            # Optionally, files located inside the mentioned folder can be opened directly using a command
-            - ./path/to/local/files:/files
+            - ./path/to/local/files:/files # Optional, files located inside this folder can be opened directly using a command
+            - ./path/to/bash/scripts:/user_scripts # Optional, executable scripts located inside the below folder can be run with commands
         environment:
             - ENABLE_ADDITIONAL_COMMANDS=false
-            # Optionally, add this url along with the below image for enabling IT Tools
-            - IT_TOOLS_URL=http://localhost:8081
-        restart: unless-stopped
-        # Optionally, enable my custom IT Tools fork for accessing lots of developer tools right from the address bar
+            - IT_TOOLS_URL=http://localhost:8081 # Optionally, add this url variable along with the below image for enabling IT Tools restart: unless-stopped
+    # Optionally, enable my custom IT Tools fork for accessing lots of developer tools right from the address bar
     it-tools:
         image: 'vigneshrajj/it-tools:latest'
         ports:
@@ -105,6 +106,8 @@ docker run -d \
     - Example: `#a file /home/path/to/file.pdf Open a file directly using an alias`
 - `#d <alias>` - Deletes an existing command
     - Example: `#d gm`
+- `#cmd <scriptname> <arguments>` - Runs a user executable script located at the folder provided in the docker compose file
+    - Example: `#cmd bm https://google.com some text as argument` The script named `bm`(or `bm.sh` or with any file extension) would be called with the rest of the string as a single argument. So `https://google.com some text as argument` would be passed entirely as a single string to the `bm` script
 - `<alias> <argument1> <argument2> ...` - Searches the website denoted by the alias along with the provided arguments
     - Example: `g how to build a spaceship`
     - Example: `gm vr`
@@ -123,6 +126,8 @@ docker run -d \
     - Mark a value as default value if no arguments are passed:
         - `#a gm https://mail.google.com/mail/u/{r$(default):0,vr:1}/#inbox` - Creating a command with `$(default)` before the colon specifies it as the default
         - For the above command, `gm` would become `https://mail.google.com/mail/u/0/#inbox`
+
+*Note:* You cannot use multiple types of arguments in a single command. So `#a g https://google.com/%s?q={1}&q2={key:val}` may not work.
 
 ##### Additional Utilities
 
