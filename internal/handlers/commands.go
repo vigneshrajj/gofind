@@ -4,10 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 
+	"github.com/vigneshrajj/gofind/config"
 	"github.com/vigneshrajj/gofind/internal/database"
 	"github.com/vigneshrajj/gofind/internal/templates"
 	"github.com/vigneshrajj/gofind/models"
@@ -131,4 +134,47 @@ func HandleDeleteCommand(w http.ResponseWriter, data []string, db *gorm.DB) {
 	}
 	database.DeleteCommand(db, data[1])
 	fmt.Fprintf(w, "Deleted Command: %s", data[1])
+}
+
+func HandleUserCommands(w http.ResponseWriter, data []string, db *gorm.DB) {
+	if len(data) < 3 {
+		w.WriteHeader(http.StatusBadRequest)
+		templates.MessageTemplate(w, "Invalid number of arguments provided")
+		return
+	}
+	name := data[1]
+	argument := strings.Join(data[2:], " ")
+	scriptsDir := config.ScriptsPath
+
+	files, err := os.ReadDir(scriptsDir)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		templates.MessageTemplate(w, "Couldn't read scripts directory: " + err.Error())
+		return
+	}
+	var scriptPath string
+
+	for _, file := range files {
+		baseName := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
+		if baseName == name {
+			scriptPath = filepath.Join(scriptsDir, file.Name())
+			break
+		}
+	}
+	if scriptPath == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		templates.MessageTemplate(w, "Couldn't find the specified script.")
+		return
+	}
+
+	cmd := exec.Command(scriptPath, argument)
+	// cmd.Env = append(os.Environ(), "SHELL=/bin/bash")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		templates.MessageTemplate(w, "Couldn't execute the script: " + err.Error())
+		return
+	}
+
+	templates.MessageTemplate(w, "Executed the script: " + string(output))
 }

@@ -164,6 +164,8 @@ func HandleQuery(w http.ResponseWriter, r *http.Request, query string, db *gorm.
 		HandleDeleteCommand(w, data, db)
 	case "#l":
 		HandleListCommands(w, data, db)
+	case "#cmd":
+		HandleUserCommands(w, data, db)
 	default:
 		HandleRedirectQuery(w, r, data, db)
 	}

@@ -5,3 +5,4 @@ tmp
 bin
 tests/gofind.db
 gofind.db
+user_scripts/
