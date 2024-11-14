@@ -11,6 +11,10 @@ Inspired from: [GoLinks](https://git.mills.io/prologic/golinks)
 - Stores all your data locally in an sqlite database allowing easy backup for your data
 - Lightweight and fast since it is built with technologies like Go and HTMX
 
+## Demo
+
+https://github.com/user-attachments/assets/20d01905-e114-48c3-9845-52deb55af0ee
+
 ## Example usages
 - Invoke ChatGPT from the address bar by typing 'c' followed by your query: `c how to build a spaceship`. [Command: `#a c https://chatgpt.com/?q=%s`]
 - Directly open a specific email inbox by typing `gm personal` or `gm work` or just `gm` which would default to open the personal inbox [Command: `#a gm https://mail.google.com/mail/u/{work:0,personal$(default):1}/#inbox`]
