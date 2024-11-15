@@ -8,6 +8,7 @@ import (
 	"github.com/vigneshrajj/gofind/config"
 	"github.com/vigneshrajj/gofind/internal/database"
 	"github.com/vigneshrajj/gofind/internal/handlers"
+	"github.com/vigneshrajj/gofind/internal/templates"
 	"gorm.io/gorm"
 )
 
@@ -15,6 +16,10 @@ func HandleRoutes(db *gorm.DB) {
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	http.Handle("/files/", http.StripPrefix("/files", http.FileServer(http.Dir("/files"))))
+
+	http.HandleFunc("/opensearch.xml", func(w http.ResponseWriter, r *http.Request) {
+		templates.OpenSearchDescriptionTemplate(w)
+	})
 
 	http.HandleFunc("/search", func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query().Get("query")

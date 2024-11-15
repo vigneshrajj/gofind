@@ -4,6 +4,6 @@
   <Description>GoFind</Description>
   <InputEncoding>UTF-8</InputEncoding>
   <Image width="32" height="32" type="image/png"></Image>
-  <Url type="text/html" method="GET" template="http://localhost:8080/search?query={searchTerms}"/>
-  <Url type="application/x-suggestions+json" method="GET" template="http://localhost:8080/opensearch-suggestions?query={searchTerms}"/>
+	<Url type="text/html" method="GET" template="{{.HostUrl}}/search?query={searchTerms}"/>
+	<Url type="application/x-suggestions+json" method="GET" template="{{.HostUrl}}/opensearch-suggestions?query={searchTerms}"/>
 </OpenSearchDescription>

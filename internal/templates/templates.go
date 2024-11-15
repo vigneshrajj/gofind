@@ -2,6 +2,7 @@ package templates
 
 import (
 	"html/template"
+	text_template "text/template"
 	"log"
 	"net/http"
 	"net/url"
@@ -32,6 +33,7 @@ type CommandWithArgs struct {
 }
 
 type ListCommandsPageData struct {
+	HostUrl string
 	Type 	 models.CommandType
 	EnableUtils bool
 }
@@ -145,6 +147,7 @@ var helpers template.FuncMap = map[string]interface{}{
 
 func ListCommandsTemplate(w http.ResponseWriter, command_type models.CommandType) {
 	data := ListCommandsPageData{
+		HostUrl: config.HostUrl,
 		Type: command_type,
 		EnableUtils: config.ItToolsUrl != "",
 	}
@@ -242,5 +245,17 @@ func NotificationTemplate(w http.ResponseWriter, title string) {
 		Title: title,
 	}
 	tmpl := template.Must(template.ParseFiles("static/templates/notification.html"))
+	tmpl.Execute(w, data)
+}
+
+type OpenSearchPageData struct {
+	HostUrl string
+}
+
+func OpenSearchDescriptionTemplate(w http.ResponseWriter) {
+	data := OpenSearchPageData{
+		config.HostUrl,
+	}
+	tmpl := text_template.Must(text_template.ParseFiles("static/opensearch.xml"))
 	tmpl.Execute(w, data)
 }

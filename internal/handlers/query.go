@@ -175,14 +175,10 @@ func HandleQuery(w http.ResponseWriter, r *http.Request, query string, db *gorm.
 func HandleOpenSearchSuggestions(w http.ResponseWriter, query string, db *gorm.DB) {
 	w.Header().Set("Content-Type", "application/json")
 
-		results, err := database.FilteredListCommands(db, query, 5, 0, "search")
-		if err != nil {
-			w.Write([]byte{})
-			return
-		}
+		results := database.ListSuggestedCommands(db, query, 5)
 
 		aliases := make([]string, 0)
-		for _, result := range *results {
+		for _, result := range results {
 			aliases = append(aliases, result.Alias)
 		}
 

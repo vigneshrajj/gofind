@@ -31,6 +31,12 @@ func ListCommands(db *gorm.DB) []models.Command {
 	return commands
 }
 
+func ListSuggestedCommands(db *gorm.DB, query string, items int) []models.Command {
+	var commands []models.Command
+	db.Where("alias LIKE ?", "%"+query+"%").Limit(items).Find(&commands)
+	return commands
+}
+
 func FilteredListCommands(db *gorm.DB, query string, pageSize int, offset int, command_type string) (*[]models.Command, error) {
 	var commands []models.Command
 
