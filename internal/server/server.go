@@ -21,6 +21,12 @@ func HandleRoutes(db *gorm.DB) {
 		handlers.HandleQuery(w, r, query, db)
 	})
 
+
+	http.HandleFunc("/opensearch-suggestions", func(w http.ResponseWriter, r *http.Request) {
+		query := r.URL.Query().Get("query")
+		handlers.HandleOpenSearchSuggestions(w, query, db)
+	})
+
 	http.HandleFunc("/filter_commands", func(w http.ResponseWriter, r *http.Request) {
 		handlers.HandleFilteredListCommands(w, r, db)
 	})

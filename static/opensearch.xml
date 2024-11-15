@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>GoFind</ShortName>
+  <Description>GoFind</Description>
+  <InputEncoding>UTF-8</InputEncoding>
+  <Image width="32" height="32" type="image/png"></Image>
+  <Url type="text/html" method="GET" template="http://localhost:8080/search?query={searchTerms}"/>
+  <Url type="application/x-suggestions+json" method="GET" template="http://localhost:8080/opensearch-suggestions?query={searchTerms}"/>
+</OpenSearchDescription>

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -169,4 +170,28 @@ func HandleQuery(w http.ResponseWriter, r *http.Request, query string, db *gorm.
 	default:
 		HandleRedirectQuery(w, r, data, db)
 	}
+}
+
+func HandleOpenSearchSuggestions(w http.ResponseWriter, query string, db *gorm.DB) {
+	w.Header().Set("Content-Type", "application/json")
+
+		results, err := database.FilteredListCommands(db, query, 5, 0, "search")
+		if err != nil {
+			w.Write([]byte{})
+			return
+		}
+
+		aliases := make([]string, 0)
+		for _, result := range *results {
+			aliases = append(aliases, result.Alias)
+		}
+
+		resp := []interface{}{ query, aliases }
+
+		respJSON, err := json.Marshal(resp)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Write(respJSON)
 }
