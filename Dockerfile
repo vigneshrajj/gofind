@@ -5,9 +5,9 @@ WORKDIR /app
 COPY . .
 RUN go mod download
 
-RUN CGO_ENABLED=1 GOOS=linux go build -o /main ./cmd/gofind/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o /main ./cmd/gofind/main.go
 
-FROM debian:bookworm-slim
+FROM alpine:latest
 COPY --from=builder /main /main
 COPY --from=builder /app/static /static
 

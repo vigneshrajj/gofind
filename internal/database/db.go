@@ -5,7 +5,7 @@ import (
 
 	"github.com/vigneshrajj/gofind/config"
 	"github.com/vigneshrajj/gofind/models"
-	"gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
 

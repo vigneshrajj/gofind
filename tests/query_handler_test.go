@@ -8,7 +8,6 @@ import (
 	"github.com/vigneshrajj/gofind/internal/database"
 	"github.com/vigneshrajj/gofind/internal/handlers"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/vigneshrajj/gofind/models"
 )
 

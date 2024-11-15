@@ -5,7 +5,6 @@ import (
 	"github.com/vigneshrajj/gofind/internal/database"
 	"testing"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/vigneshrajj/gofind/models"
 )
 
