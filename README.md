@@ -52,6 +52,7 @@ services:
         environment:
             - ENABLE_ADDITIONAL_COMMANDS=false
             - IT_TOOLS_URL=http://localhost:8081 # Optionally, add this url variable along with the below image for enabling IT Tools restart: unless-stopped
+            - HOST_URL=http://localhost:3005 # Optional, specify the url where gofind is hosted (for enabling firefox autosuggestions)
     # Optionally, enable my custom IT Tools fork for accessing lots of developer tools right from the address bar
     it-tools:
         image: 'vigneshrajj/it-tools:latest'
@@ -82,16 +83,12 @@ docker run -d \
 
 ### Set as default search engine
 
-##### Chrome
+Set GoFind as your default browser by setting the url where gofind is hosted, such as: http://localhost:3005/search?query=%s
 
-1. Go to settings by typing `chrome://settings` in the address bar
-2. Go to `Search Engine` tab from the left sidebar
-3. Click on `Add` button next to **Site Search** and fill the form with these values:
-    - Name: GoFind
-    - Shortcut: go
-    - URL: http://localhost:3005/search?query=%s
-4. Click on the three dots icon next to GoFind and choose **Make default**
-5. Type `#l` in the address bar to verify if the process was successful
+- [Instructions for Chrome](https://support.google.com/chrome/answer/95426)
+- [Instructions for Firefox](https://support.mozilla.org/en-US/kb/add-or-remove-search-engine-firefox#w_add-a-search-engine-from-the-address-bar)
+
+Type #l in address bar and press enter to see a list of all available commands.
 
 ### Additional Configurations
 
